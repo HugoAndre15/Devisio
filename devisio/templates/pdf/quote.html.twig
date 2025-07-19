@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Devis {{ quote.number }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 20px;
+        }
+        .company-info {
+            flex: 1;
+        }
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3b82f6;
+            margin-bottom: 10px;
+        }
+        .quote-info {
+            text-align: right;
+            flex: 1;
+        }
+        .quote-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #3b82f6;
+            margin-bottom: 5px;
+        }
+        .addresses {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .address-block {
+            flex: 1;
+            margin-right: 20px;
+        }
+        .address-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #3b82f6;
+        }
+        .quote-details {
+            margin-bottom: 30px;
+        }
+        .quote-details h3 {
+            color: #3b82f6;
+            margin-bottom: 10px;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .items-table th,
+        .items-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .items-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        .items-table td.number {
+            text-align: right;
+        }
+        .totals {
+            margin-left: auto;
+            width: 300px;
+            margin-bottom: 30px;
+        }
+        .totals table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .totals td {
+            padding: 5px 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .totals .total-row {
+            font-weight: bold;
+            background-color: #f8f9fa;
+            color: #3b82f6;
+        }
+        .conditions {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        .conditions h4 {
+            color: #3b82f6;
+            margin-bottom: 10px;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-draft { background-color: #6b7280; color: white; }
+        .status-sent { background-color: #3b82f6; color: white; }
+        .status-accepted { background-color: #10b981; color: white; }
+        .status-rejected { background-color: #ef4444; color: white; }
+        .status-expired { background-color: #f59e0b; color: white; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="company-info">
+            <div class="company-name">{{ quote.company.name }}</div>
+            <div>{{ quote.company.address }}</div>
+            <div>{{ quote.company.postalCode }} {{ quote.company.city }}</div>
+            <div>{{ quote.company.country }}</div>
+            {% if quote.company.phone %}
+                <div>Tél: {{ quote.company.phone }}</div>
+            {% endif %}
+            {% if quote.company.email %}
+                <div>Email: {{ quote.company.email }}</div>
+            {% endif %}
+            {% if quote.company.website %}
+                <div>{{ quote.company.website }}</div>
+            {% endif %}
+        </div>
+        <div class="quote-info">
+            <div class="quote-number">DEVIS {{ quote.number }}</div>
+            <div>Date: {{ quote.quoteDate|date('d/m/Y') }}</div>
+            <div>Valide jusqu'au: {{ quote.validUntil|date('d/m/Y') }}</div>
+            <div style="margin-top: 10px;">
+                <span class="status-badge status-{{ quote.status }}">{{ quote.statusLabel }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="addresses">
+        <div class="address-block">
+            <div class="address-title">Entreprise</div>
+            <div><strong>{{ quote.company.name }}</strong></div>
+            {% if quote.company.siret %}
+                <div>SIRET: {{ quote.company.siret }}</div>
+            {% endif %}
+            {% if quote.company.vatNumber %}
+                <div>TVA: {{ quote.company.vatNumber }}</div>
+            {% endif %}
+            <div>{{ quote.company.fullAddress }}</div>
+        </div>
+        <div class="address-block">
+            <div class="address-title">Client</div>
+            <div><strong>{{ quote.customer.displayName }}</strong></div>
+            {% if quote.customer.isCompany and quote.customer.siret %}
+                <div>SIRET: {{ quote.customer.siret }}</div>
+            {% endif %}
+            {% if quote.customer.isCompany and quote.customer.vatNumber %}
+                <div>TVA: {{ quote.customer.vatNumber }}</div>
+            {% endif %}
+            <div>{{ quote.customer.fullAddress }}</div>
+            <div>{{ quote.customer.email }}</div>
+            {% if quote.customer.phone %}
+                <div>{{ quote.customer.phone }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="quote-details">
+        <h3>{{ quote.subject }}</h3>
+        {% if quote.description %}
+            <p>{{ quote.description|nl2br }}</p>
+        {% endif %}
+    </div>
+
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width: 40%;">Produit/Service</th>
+                <th style="width: 20%;">Prix unitaire</th>
+                <th style="width: 15%;">Quantité</th>
+                <th style="width: 10%;">Unité</th>
+                <th style="width: 15%;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in quote.items %}
+                <tr>
+                    <td>
+                        <strong>{{ item.productName }}</strong>
+                        {% if item.description %}
+                            <br><small>{{ item.description }}</small>
+                        {% endif %}
+                    </td>
+                    <td class="number">{{ item.formattedUnitPrice }}</td>
+                    <td class="number">{{ item.quantity }}</td>
+                    <td>{{ item.unit }}</td>
+                    <td class="number">{{ item.formattedTotal }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <table>
+            <tr>
+                <td>Sous-total HT:</td>
+                <td class="number">{{ quote.subtotal|number_format(2, ',', ' ') }} €</td>
+            </tr>
+            <tr>
+                <td>TVA ({{ quote.company.vatRate }}%):</td>
+                <td class="number">{{ quote.vatAmount|number_format(2, ',', ' ') }} €</td>
+            </tr>
+            <tr class="total-row">
+                <td>Total TTC:</td>
+                <td class="number">{{ quote.total|number_format(2, ',', ' ') }} €</td>
+            </tr>
+        </table>
+    </div>
+
+    {% if quote.terms %}
+        <div class="conditions">
+            <h4>Conditions particulières</h4>
+            <p>{{ quote.terms|nl2br }}</p>
+        </div>
+    {% endif %}
+
+    {% if quote.notes %}
+        <div class="conditions">
+            <h4>Notes</h4>
+            <p>{{ quote.notes|nl2br }}</p>
+        </div>
+    {% endif %}
+
+    <div class="footer">
+        <p>{{ quote.company.name }} - {{ quote.company.fullAddress }}</p>
+        {% if quote.company.siret %}
+            <p>SIRET: {{ quote.company.siret }}</p>
+        {% endif %}
+        {% if quote.company.vatNumber %}
+            <p>N° TVA: {{ quote.company.vatNumber }}</p>
+        {% endif %}
+    </div>
+</body>
+</html>
