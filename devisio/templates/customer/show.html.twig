@@ -1,0 +1,445 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ customer.displayName }} - Clients - Devisio{% endblock %}
+{% block page_title %}{{ customer.displayName }}{% endblock %}
+
+{% block header_actions %}
+    <div class="flex space-x-3">
+        <a href="{{ path('app_customers') }}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour aux clients
+        </a>
+        
+        {% if is_granted('edit', customer) %}
+            <a href="{{ path('app_customers_edit', {id: customer.id}) }}" class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition duration-200">
+                <i class="fas fa-edit mr-2"></i>
+                Modifier
+            </a>
+        {% endif %}
+        
+        <a href="{{ path('app_quotes_new') }}?customer={{ customer.id }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200">
+            <i class="fas fa-file-alt mr-2"></i>
+            Nouveau devis
+        </a>
+        
+        <div class="relative group">
+            <button class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition duration-200 flex items-center">
+                <i class="fas fa-ellipsis-v mr-2"></i>
+                Actions
+                <i class="fas fa-chevron-down ml-2"></i>
+            </button>
+            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                <div class="py-1">
+                    {% if is_granted('edit', customer) %}
+                        <form action="{{ path('app_customers_toggle_status', {id: customer.id}) }}" method="post" style="display: inline;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_status' ~ customer.id) }}">
+                            <button type="submit" class="block w-full text-left px-4 py-2 text-sm {{ customer.isActive ? 'text-orange-600 hover:bg-orange-50' : 'text-green-600 hover:bg-green-50' }}">
+                                <i class="fas {{ customer.isActive ? 'fa-pause' : 'fa-play' }} mr-2"></i>
+                                {{ customer.isActive ? 'Désactiver' : 'Activer' }}
+                            </button>
+                        </form>
+                    {% endif %}
+                    
+                    {% if is_granted('delete', customer) %}
+                        <form action="{{ path('app_customers_delete', {id: customer.id}) }}" method="post" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce client ? Cette action est irréversible.')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ customer.id) }}">
+                            <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                <i class="fas fa-trash mr-2"></i>
+                                Supprimer
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Contenu principal -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- En-tête du client -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-start justify-between mb-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-16 w-16">
+                            <div class="h-16 w-16 rounded-full {{ customer.isCompany ? 'bg-purple-100' : 'bg-blue-100' }} flex items-center justify-center">
+                                <i class="fas {{ customer.isCompany ? 'fa-building' : 'fa-user' }} text-2xl {{ customer.isCompany ? 'text-purple-600' : 'text-blue-600' }}"></i>
+                            </div>
+                        </div>
+                        <div class="ml-6">
+                            <h1 class="text-3xl font-bold text-gray-900">{{ customer.displayName }}</h1>
+                            <p class="text-lg text-gray-600 mt-1">{{ customer.typeLabel }}</p>
+                            {% if customer.isCompany and customer.companyName != customer.displayName %}
+                                <p class="text-sm text-gray-500 mt-1">Contact: {{ customer.firstName }} {{ customer.lastName }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        {% if customer.isActive %}
+                            <span class="inline-flex px-3 py-2 text-sm font-semibold rounded-full bg-green-100 text-green-800">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                Actif
+                            </span>
+                        {% else %}
+                            <span class="inline-flex px-3 py-2 text-sm font-semibold rounded-full bg-red-100 text-red-800">
+                                <i class="fas fa-times-circle mr-2"></i>
+                                Inactif
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations de contact -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                    <i class="fas fa-address-card mr-2 text-primary-600"></i>
+                    Informations de contact
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Email</label>
+                        <p class="text-sm text-gray-900">
+                            <i class="fas fa-envelope mr-2 text-gray-400"></i>
+                            <a href="mailto:{{ customer.email }}" class="text-primary-600 hover:text-primary-800">{{ customer.email }}</a>
+                        </p>
+                    </div>
+                    {% if customer.phone %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Téléphone</label>
+                            <p class="text-sm text-gray-900">
+                                <i class="fas fa-phone mr-2 text-gray-400"></i>
+                                <a href="tel:{{ customer.phone }}" class="text-primary-600 hover:text-primary-800">{{ customer.phone }}</a>
+                            </p>
+                        </div>
+                    {% endif %}
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Adresse</label>
+                        <p class="text-sm text-gray-900">
+                            <i class="fas fa-map-marker-alt mr-2 text-gray-400"></i>
+                            {{ customer.fullAddress }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations légales (pour les entreprises) -->
+            {% if customer.isCompany and (customer.siret or customer.vatNumber) %}
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-building mr-2 text-purple-600"></i>
+                        Informations légales
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {% if customer.siret %}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 mb-1">SIRET</label>
+                                <p class="text-sm text-gray-900 font-mono">{{ customer.siret }}</p>
+                            </div>
+                        {% endif %}
+                        {% if customer.vatNumber %}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 mb-1">Numéro de TVA</label>
+                                <p class="text-sm text-gray-900 font-mono">{{ customer.vatNumber }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Historique des devis -->
+            {% if quotes|length > 0 %}
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            <i class="fas fa-file-alt mr-2 text-blue-600"></i>
+                            Devis récents ({{ stats.quotes_count }})
+                        </h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Numéro</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sujet</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Montant</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for quote in quotes %}
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            {{ quote.number }}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-900">
+                                            {{ quote.subject|length > 30 ? quote.subject|slice(0, 30) ~ '...' : quote.subject }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ quote.quoteDate|date('d/m/Y') }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {{ quote.formattedTotal }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ quote.statusColor == 'green' ? 'bg-green-100 text-green-800' : (quote.statusColor == 'blue' ? 'bg-blue-100 text-blue-800' : (quote.statusColor == 'red' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800')) }}">
+                                                {{ quote.statusLabel }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <a href="{{ path('app_quotes_show', {id: quote.id}) }}" 
+                                               class="text-primary-600 hover:text-primary-900">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if stats.quotes_count > 10 %}
+                        <div class="px-6 py-3 bg-gray-50 text-center">
+                            <a href="{{ path('app_quotes') }}?customer={{ customer.id }}" class="text-primary-600 hover:text-primary-800 text-sm font-medium">
+                                Voir tous les devis ({{ stats.quotes_count }}) →
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <!-- Historique des factures -->
+            {% if invoices|length > 0 %}
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            <i class="fas fa-receipt mr-2 text-green-600"></i>
+                            Factures récentes ({{ stats.invoices_count }})
+                        </h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Numéro</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sujet</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Montant</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for invoice in invoices %}
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            {{ invoice.number }}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-900">
+                                            {{ invoice.subject|length > 30 ? invoice.subject|slice(0, 30) ~ '...' : invoice.subject }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ invoice.invoiceDate|date('d/m/Y') }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {{ invoice.formattedTotal }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ invoice.statusColor == 'green' ? 'bg-green-100 text-green-800' : (invoice.statusColor == 'blue' ? 'bg-blue-100 text-blue-800' : (invoice.statusColor == 'red' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800')) }}">
+                                                {{ invoice.statusLabel }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <a href="#" class="text-primary-600 hover:text-primary-900">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if stats.invoices_count > 10 %}
+                        <div class="px-6 py-3 bg-gray-50 text-center">
+                            <a href="#" class="text-primary-600 hover:text-primary-800 text-sm font-medium">
+                                Voir toutes les factures ({{ stats.invoices_count }}) →
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Statistiques du client -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                    <i class="fas fa-chart-bar mr-2 text-primary-600"></i>
+                    Statistiques
+                </h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Devis créés</span>
+                        <span class="text-sm font-medium text-gray-900">{{ stats.quotes_count }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Montant devis</span>
+                        <span class="text-sm font-medium text-primary-600">{{ stats.quotes_total|number_format(2, ',', ' ') }} €</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Factures émises</span>
+                        <span class="text-sm font-medium text-gray-900">{{ stats.invoices_count }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">CA facturé</span>
+                        <span class="text-sm font-medium text-green-600">{{ stats.invoices_total|number_format(2, ',', ' ') }} €</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t border-gray-200">
+                        <span class="text-sm text-gray-600">CA encaissé</span>
+                        <span class="text-sm font-semibold text-green-600">{{ stats.invoices_paid|number_format(2, ',', ' ') }} €</span>
+                    </div>
+                </div>
+
+                {% if stats.quotes_count > 0 %}
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <div class="text-xs text-gray-500 mb-2">Taux de conversion</div>
+                        {% set conversion_rate = stats.invoices_count > 0 ? (stats.invoices_count / stats.quotes_count * 100) : 0 %}
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-600 h-2 rounded-full" style="width: {{ conversion_rate }}%"></div>
+                        </div>
+                        <div class="text-xs text-gray-600 mt-1">{{ conversion_rate|round }}% des devis convertis</div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                    <i class="fas fa-bolt mr-2 text-yellow-600"></i>
+                    Actions rapides
+                </h3>
+                <div class="space-y-3">
+                    <a href="{{ path('app_quotes_new') }}?customer={{ customer.id }}" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200 block text-center">
+                        <i class="fas fa-file-alt mr-2"></i>
+                        Nouveau devis
+                    </a>
+                    
+                    <a href="mailto:{{ customer.email }}" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200 block text-center">
+                        <i class="fas fa-envelope mr-2"></i>
+                        Envoyer un email
+                    </a>
+                    
+                    {% if customer.phone %}
+                        <a href="tel:{{ customer.phone }}" class="w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition duration-200 block text-center">
+                            <i class="fas fa-phone mr-2"></i>
+                            Appeler
+                        </a>
+                    {% endif %}
+                    
+                    {% if is_granted('edit', customer) %}
+                        <a href="{{ path('app_customers_edit', {id: customer.id}) }}" class="w-full bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition duration-200 block text-center">
+                            <i class="fas fa-edit mr-2"></i>
+                            Modifier les infos
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Informations système -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                    <i class="fas fa-info-circle mr-2 text-gray-600"></i>
+                    Informations
+                </h3>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Client depuis</label>
+                        <p class="text-sm text-gray-900">{{ customer.createdAt|date('d/m/Y') }}</p>
+                    </div>
+                    {% if customer.updatedAt != customer.createdAt %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Dernière modification</label>
+                            <p class="text-sm text-gray-900">{{ customer.updatedAt|date('d/m/Y à H:i') }}</p>
+                        </div>
+                    {% endif %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Statut</label>
+                        <p class="text-sm">
+                            {% if customer.isActive %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Actif
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    <i class="fas fa-times-circle mr-1"></i>
+                                    Inactif
+                                </span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Relations -->
+            {% if stats.quotes_count == 0 and stats.invoices_count == 0 %}
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-lightbulb text-yellow-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-yellow-800">Nouveau client</h3>
+                            <p class="text-sm text-yellow-700 mt-1">
+                                Ce client n'a encore aucun devis ni facture. 
+                                <a href="{{ path('app_quotes_new') }}?customer={{ customer.id }}" class="font-medium underline">
+                                    Créez son premier devis !
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Actions en masse (si nécessaire) -->
+    {% if stats.quotes_count > 0 or stats.invoices_count > 0 %}
+        <div class="mt-8 bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Résumé de l'activité</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                    <div class="text-2xl font-bold text-blue-600">{{ stats.quotes_count }}</div>
+                    <div class="text-sm text-blue-800">Devis créés</div>
+                </div>
+                <div class="text-center p-4 bg-green-50 rounded-lg">
+                    <div class="text-2xl font-bold text-green-600">{{ stats.invoices_count }}</div>
+                    <div class="text-sm text-green-800">Factures émises</div>
+                </div>
+                <div class="text-center p-4 bg-purple-50 rounded-lg">
+                    <div class="text-2xl font-bold text-purple-600">{{ stats.invoices_paid|number_format(0, ',', ' ') }}€</div>
+                    <div class="text-sm text-purple-800">CA encaissé</div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Confirmation pour les actions sensibles
+        document.querySelectorAll('form[onsubmit*="confirm"]').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const confirmText = this.getAttribute('onsubmit').match(/confirm\(['"](.+?)['"]\)/)[1];
+                if (!confirm(confirmText)) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+{% endblock %}

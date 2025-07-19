@@ -1,0 +1,372 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Clients - Devisio{% endblock %}
+{% block page_title %}Clients{% endblock %}
+
+{% block header_actions %}
+    <div class="flex space-x-3">
+        <a href="{{ path('app_customers_new') }}" class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition duration-200">
+            <i class="fas fa-plus mr-2"></i>
+            Nouveau client
+        </a>
+        
+        {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('app_customers_export') }}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200">
+                <i class="fas fa-download mr-2"></i>
+                Exporter CSV
+            </a>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Statistiques -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <i class="fas fa-users text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total clients</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.total }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <i class="fas fa-user text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Particuliers</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.individuals }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                    <i class="fas fa-building text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Entreprises</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.companies }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                    <i class="fas fa-check-circle text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Actifs</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.active }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres et recherche -->
+    <div class="bg-white rounded-lg shadow mb-6">
+        <div class="p-6">
+            <form method="GET" class="space-y-4 md:space-y-0 md:flex md:items-end md:space-x-4">
+                <!-- Recherche -->
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Recherche</label>
+                    <div class="relative">
+                        <input type="text" 
+                               name="search" 
+                               value="{{ current_search }}" 
+                               placeholder="Nom, email, téléphone..." 
+                               class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Filtre par type -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                    <select name="type" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                        <option value="">Tous les types</option>
+                        <option value="individual" {{ current_type == 'individual' ? 'selected' : '' }}>Particulier</option>
+                        <option value="company" {{ current_type == 'company' ? 'selected' : '' }}>Entreprise</option>
+                    </select>
+                </div>
+
+                <!-- Filtre par statut -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
+                    <select name="status" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                        <option value="">Tous les statuts</option>
+                        <option value="active" {{ current_status == 'active' ? 'selected' : '' }}>Actif</option>
+                        <option value="inactive" {{ current_status == 'inactive' ? 'selected' : '' }}>Inactif</option>
+                    </select>
+                </div>
+
+                <!-- Boutons -->
+                <div class="flex space-x-2">
+                    <button type="submit" class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition duration-200">
+                        <i class="fas fa-search mr-2"></i>
+                        Rechercher
+                    </button>
+                    <a href="{{ path('app_customers') }}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <i class="fas fa-times mr-2"></i>
+                        Effacer
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste des clients -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-900">Liste des clients</h3>
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm text-gray-500">
+                        {{ customers.getTotalItemCount }} client{{ customers.getTotalItemCount > 1 ? 's' : '' }} au total
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        {% if customers.items|length > 0 %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Client
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Type
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Contact
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Adresse
+                            </th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Statut
+                            </th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for customer in customers %}
+                            <tr class="hover:bg-gray-50 {{ not customer.isActive ? 'opacity-60' : '' }}">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <div class="h-10 w-10 rounded-full {{ customer.isCompany ? 'bg-purple-100' : 'bg-blue-100' }} flex items-center justify-center">
+                                                <i class="fas {{ customer.isCompany ? 'fa-building' : 'fa-user' }} {{ customer.isCompany ? 'text-purple-600' : 'text-blue-600' }}"></i>
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ customer.displayName }}
+                                            </div>
+                                            {% if customer.isCompany and customer.companyName != customer.displayName %}
+                                                <div class="text-sm text-gray-500">
+                                                    Contact: {{ customer.firstName }} {{ customer.lastName }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ customer.isCompany ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800' }}">
+                                        {{ customer.typeLabel }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-900">
+                                        <i class="fas fa-envelope mr-2 text-gray-400"></i>
+                                        {{ customer.email }}
+                                    </div>
+                                    {% if customer.phone %}
+                                        <div class="text-sm text-gray-500">
+                                            <i class="fas fa-phone mr-2 text-gray-400"></i>
+                                            {{ customer.phone }}
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-900">{{ customer.city }}</div>
+                                    <div class="text-sm text-gray-500">{{ customer.postalCode }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    {% if customer.isActive %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Actif
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                            <i class="fas fa-times-circle mr-1"></i>
+                                            Inactif
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <div class="flex items-center justify-end space-x-2">
+                                        <a href="{{ path('app_customers_show', {id: customer.id}) }}" 
+                                           class="text-primary-600 hover:text-primary-900" 
+                                           title="Voir">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        
+                                        {% if is_granted('edit', customer) %}
+                                            <a href="{{ path('app_customers_edit', {id: customer.id}) }}" 
+                                               class="text-yellow-600 hover:text-yellow-900" 
+                                               title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        {% endif %}
+                                        
+                                        <a href="{{ path('app_quotes_new') }}?customer={{ customer.id }}" 
+                                           class="text-blue-600 hover:text-blue-900" 
+                                           title="Nouveau devis">
+                                            <i class="fas fa-file-alt"></i>
+                                        </a>
+                                        
+                                        {% if is_granted('edit', customer) %}
+                                            <form action="{{ path('app_customers_toggle_status', {id: customer.id}) }}" 
+                                                  method="post" 
+                                                  style="display: inline;" 
+                                                  onsubmit="return confirm('Êtes-vous sûr de vouloir {{ customer.isActive ? 'désactiver' : 'activer' }} ce client ?')">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_status' ~ customer.id) }}">
+                                                <button type="submit" 
+                                                        class="{{ customer.isActive ? 'text-orange-600 hover:text-orange-900' : 'text-green-600 hover:text-green-900' }}" 
+                                                        title="{{ customer.isActive ? 'Désactiver' : 'Activer' }}">
+                                                    <i class="fas {{ customer.isActive ? 'fa-pause' : 'fa-play' }}"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        
+                                        {% if is_granted('delete', customer) %}
+                                            <form action="{{ path('app_customers_delete', {id: customer.id}) }}" 
+                                                  method="post" 
+                                                  style="display: inline;" 
+                                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce client ? Cette action est irréversible.')">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ customer.id) }}">
+                                                <button type="submit" 
+                                                        class="text-red-600 hover:text-red-900" 
+                                                        title="Supprimer">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="px-6 py-4 border-t border-gray-200">
+                {{ knp_pagination_render(customers) }}
+            </div>
+        {% else %}
+            <div class="px-6 py-12 text-center">
+                <div class="text-gray-500">
+                    {% if current_search or current_type or current_status %}
+                        <i class="fas fa-search text-4xl mb-4"></i>
+                        <p class="text-lg">Aucun client trouvé</p>
+                        <p class="text-sm">Essayez de modifier vos critères de recherche</p>
+                        <div class="mt-6">
+                            <a href="{{ path('app_customers') }}" 
+                               class="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition duration-200">
+                                <i class="fas fa-times mr-2"></i>
+                                Effacer les filtres
+                            </a>
+                        </div>
+                    {% else %}
+                        <i class="fas fa-users text-4xl mb-4"></i>
+                        <p class="text-lg">Aucun client</p>
+                        <p class="text-sm">Créez votre premier client pour commencer</p>
+                        <div class="mt-6">
+                            <a href="{{ path('app_customers_new') }}" 
+                               class="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition duration-200">
+                                <i class="fas fa-plus mr-2"></i>
+                                Créer un client
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="mt-8 bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Actions rapides</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="{{ path('app_customers_new') }}" class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition duration-200">
+                <div class="p-2 bg-blue-100 rounded-lg">
+                    <i class="fas fa-user-plus text-blue-600"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-900">Nouveau client</p>
+                    <p class="text-xs text-gray-500">Ajouter un particulier ou entreprise</p>
+                </div>
+            </a>
+            
+            <a href="{{ path('app_customers') }}?type=company" class="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition duration-200">
+                <div class="p-2 bg-purple-100 rounded-lg">
+                    <i class="fas fa-building text-purple-600"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-900">Entreprises</p>
+                    <p class="text-xs text-gray-500">Voir uniquement les entreprises</p>
+                </div>
+            </a>
+            
+            <a href="{{ path('app_customers') }}?type=individual" class="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition duration-200">
+                <div class="p-2 bg-green-100 rounded-lg">
+                    <i class="fas fa-user text-green-600"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-900">Particuliers</p>
+                    <p class="text-xs text-gray-500">Voir uniquement les particuliers</p>
+                </div>
+            </a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Auto-soumission du formulaire de recherche avec délai
+        let searchTimeout;
+        const searchInput = document.querySelector('input[name="search"]');
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    this.form.submit();
+                }, 500);
+            });
+        }
+
+        // Soumission automatique pour les selects
+        document.querySelectorAll('select[name="type"], select[name="status"]').forEach(select => {
+            select.addEventListener('change', function() {
+                this.form.submit();
+            });
+        });
+    </script>
+{% endblock %}

@@ -32,7 +32,7 @@ class InvoiceReminder
     #[Assert\NotBlank(message: 'Le message est requis.')]
     private ?string $message = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $sentAt = null;
 
     #[ORM\Column]

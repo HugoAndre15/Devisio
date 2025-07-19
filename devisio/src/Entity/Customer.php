@@ -373,4 +373,87 @@ class Customer
     {
         return $this->type === self::TYPE_INDIVIDUAL;
     }
+
+    public function getQuoteCount(): int
+    {
+        return $this->quotes->count();
+    }
+
+    public function getInvoiceCount(): int
+    {
+        return $this->invoices->count();
+    }
+
+    public function getTotalQuoteAmount(): float
+    {
+        $total = 0;
+        foreach ($this->quotes as $quote) {
+            $total += (float) $quote->getTotal();
+        }
+        return $total;
+    }
+
+    public function getTotalInvoiceAmount(): float
+    {
+        $total = 0;
+        foreach ($this->invoices as $invoice) {
+            $total += (float) $invoice->getTotal();
+        }
+        return $total;
+    }
+
+    public function getPaidInvoiceAmount(): float
+    {
+        $total = 0;
+        foreach ($this->invoices as $invoice) {
+            if ($invoice->getStatus() === 'paid') {
+                $total += (float) $invoice->getTotal();
+            }
+        }
+        return $total;
+    }
+
+    public function hasActiveQuotes(): bool
+    {
+        foreach ($this->quotes as $quote) {
+            if (in_array($quote->getStatus(), ['draft', 'sent'])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function hasUnpaidInvoices(): bool
+    {
+        foreach ($this->invoices as $invoice) {
+            if (in_array($invoice->getStatus(), ['sent', 'overdue'])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function getLastQuoteDate(): ?\DateTimeInterface
+    {
+        $lastQuote = null;
+        foreach ($this->quotes as $quote) {
+            if (!$lastQuote || $quote->getCreatedAt() > $lastQuote->getCreatedAt()) {
+                $lastQuote = $quote;
+            }
+        }
+        return $lastQuote ? $lastQuote->getCreatedAt() : null;
+    }
+
+    public function isNewCustomer(): bool
+    {
+        return $this->quotes->count() === 0 && $this->invoices->count() === 0;
+    }
+
+    public function getConversionRate(): float
+    {
+        if ($this->quotes->count() === 0) {
+            return 0;
+        }
+        return ($this->invoices->count() / $this->quotes->count()) * 100;
+    }
 }

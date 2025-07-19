@@ -1,0 +1,24 @@
+services:
+    # Configuration par défaut
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    # Services personnalisés
+    App\Service\PdfGeneratorService:
+        arguments:
+            $twig: '@twig'
+
+    App\Service\EmailService:
+        arguments:
+            $mailer: '@mailer'
+            $twig: '@twig'
+            $pdfGenerator: '@App\Service\PdfGeneratorService'
+
+    App\Security\Voter\QuoteVoter:
+        tags:
+            - { name: security.voter }
+            
+    App\Security\Voter\CustomerVoter:
+        tags:
+            - { name: security.voter }
