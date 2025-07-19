@@ -59,10 +59,10 @@ class Invoice
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $notes = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $sentAt = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $paidAt = null;
 
     #[ORM\Column]
@@ -519,5 +519,111 @@ class Invoice
     public function getFormattedVatAmount(): string
     {
         return number_format((float) $this->vatAmount, 2, ',', ' ') . ' €';
+    }
+
+    public function getDaysUntilExpiration(): int
+    {
+        $now = new \DateTime();
+        $interval = $now->diff($this->validUntil);
+        return $interval->invert ? -$interval->days : $interval->days;
+    }
+
+    public function isNearExpiration(int $days = 7): bool
+    {
+        return $this->getDaysUntilExpiration() <= $days && $this->status === self::STATUS_SENT;
+    }
+
+    public function getProgressPercentage(): int
+    {
+        return match($this->status) {
+            self::STATUS_DRAFT => 20,
+            self::STATUS_SENT => 50,
+            self::STATUS_ACCEPTED => 100,
+            self::STATUS_REJECTED => 0,
+            self::STATUS_EXPIRED => 0,
+            default => 0
+        };
+    }
+
+    public function getStatusIcon(): string
+    {
+        return match($this->status) {
+            self::STATUS_DRAFT => 'fas fa-edit',
+            self::STATUS_SENT => 'fas fa-paper-plane',
+            self::STATUS_ACCEPTED => 'fas fa-check-circle',
+            self::STATUS_REJECTED => 'fas fa-times-circle',
+            self::STATUS_EXPIRED => 'fas fa-clock',
+            default => 'fas fa-question-circle'
+        };
+    }
+
+    public function getTags(): array
+    {
+        $tags = [];
+        
+        if ($this->isHighValue()) {
+            $tags[] = 'Gros montant';
+        }
+        
+        if ($this->isNearExpiration()) {
+            $tags[] = 'Expire bientôt';
+        }
+        
+        if ($this->isOld()) {
+            $tags[] = 'Ancien';
+        }
+        
+        if ($this->hasInvoice()) {
+            $tags[] = 'Facturé';
+        }
+        
+        return $tags;
+    }
+
+    public function isHighValue(float $threshold = 5000.0): bool
+    {
+        return $this->getTotalFloat() >= $threshold;
+    }
+
+    public function getTotalFloat(): float
+    {
+        return (float) $this->total;
+    }
+
+    public function getQuoteAge(): int
+    {
+        $now = new \DateTime();
+        $interval = $now->diff($this->createdAt);
+        return $interval->days;
+    }
+
+    public function isOld(int $days = 90): bool
+    {
+        return $this->getQuoteAge() > $days;
+    }
+
+    public function getValidityDays(): int
+    {
+        $interval = $this->quoteDate->diff($this->validUntil);
+        return $interval->days;
+    }
+
+    public function getItemsCount(): int
+    {
+        return $this->items->count();
+    }
+
+    public function getMainProduct(): ?string
+    {
+        if ($this->items->isEmpty()) {
+            return null;
+        }
+        
+        return $this->items->first()->getProductName();
+    }
+
+    public function getCustomerType(): string
+    {
+        return $this->customer ? $this->customer->getTypeLabel() : 'Inconnu';
     }
 }

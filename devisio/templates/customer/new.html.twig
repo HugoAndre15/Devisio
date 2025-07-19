@@ -1,0 +1,292 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau client - Devisio{% endblock %}
+{% block page_title %}Nouveau client{% endblock %}
+
+{% block header_actions %}
+    <a href="{{ path('app_customers') }}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Retour aux clients
+    </a>
+{% endblock %}
+
+{% block body %}
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow">
+            {{ form_start(form, {'attr': {'class': 'space-y-6', 'id': 'customer-form'}}) }}
+                
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Informations du client</h3>
+                    <p class="text-sm text-gray-600 mt-1">Créez une fiche client complète pour faciliter la gestion de vos devis et factures.</p>
+                </div>
+                
+                <!-- Type de client -->
+                <div class="px-6 py-4">
+                    <div class="mb-6">
+                        {{ form_label(form.type, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.type, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                        {{ form_errors(form.type) }}
+                        <p class="text-xs text-gray-500 mt-1">Choisissez "Particulier" pour les clients individuels ou "Entreprise" pour les sociétés.</p>
+                    </div>
+                </div>
+
+                <!-- Informations personnelles -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <h4 class="text-md font-medium text-gray-900 mb-4">
+                        <i class="fas fa-user mr-2 text-primary-600"></i>
+                        Informations personnelles
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            {{ form_label(form.firstName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.firstName, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.firstName) }}
+                        </div>
+                        
+                        <div>
+                            {{ form_label(form.lastName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.lastName, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.lastName) }}
+                        </div>
+                    </div>
+
+                    <!-- Champs entreprise (masqués par défaut) -->
+                    <div id="company-fields" class="space-y-4" style="display: none;">
+                        <div>
+                            {{ form_label(form.companyName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.companyName, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.companyName) }}
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                {{ form_label(form.siret, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(form.siret, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                {{ form_errors(form.siret) }}
+                            </div>
+                            
+                            <div>
+                                {{ form_label(form.vatNumber, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(form.vatNumber, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                {{ form_errors(form.vatNumber) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations de contact -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <h4 class="text-md font-medium text-gray-900 mb-4">
+                        <i class="fas fa-address-card mr-2 text-green-600"></i>
+                        Informations de contact
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            {{ form_label(form.email, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.email, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.email) }}
+                        </div>
+                        
+                        <div>
+                            {{ form_label(form.phone, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.phone, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.phone) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adresse -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <h4 class="text-md font-medium text-gray-900 mb-4">
+                        <i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>
+                        Adresse
+                    </h4>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            {{ form_label(form.address, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.address, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.address) }}
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                {{ form_label(form.postalCode, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(form.postalCode, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                {{ form_errors(form.postalCode) }}
+                            </div>
+                            
+                            <div>
+                                {{ form_label(form.city, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(form.city, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                {{ form_errors(form.city) }}
+                            </div>
+                            
+                            <div>
+                                {{ form_label(form.country, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(form.country, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                {{ form_errors(form.country) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Options -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <h4 class="text-md font-medium text-gray-900 mb-4">
+                        <i class="fas fa-cog mr-2 text-gray-600"></i>
+                        Options
+                    </h4>
+                    
+                    <div class="flex items-center">
+                        {{ form_widget(form.isActive, {'attr': {'class': 'h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded'}}) }}
+                        {{ form_label(form.isActive, null, {'label_attr': {'class': 'ml-2 text-sm text-gray-900'}}) }}
+                        {{ form_errors(form.isActive) }}
+                        <p class="text-xs text-gray-500 ml-2">Les clients inactifs n'apparaîtront pas dans les listes de sélection.</p>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="px-6 py-4 border-t border-gray-200 flex justify-between">
+                    <a href="{{ path('app_customers') }}" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <i class="fas fa-times mr-2"></i>
+                        Annuler
+                    </a>
+                    
+                    <div class="space-x-3">
+                        <button type="submit" name="submit_action" value="save" class="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition duration-200">
+                            <i class="fas fa-save mr-2"></i>
+                            Enregistrer
+                        </button>
+                        <button type="submit" name="submit_action" value="save_and_new" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200">
+                            <i class="fas fa-plus mr-2"></i>
+                            Enregistrer et nouveau
+                        </button>
+                    </div>
+                </div>
+            {{ form_end(form) }}
+        </div>
+
+        <!-- Aide et conseils -->
+        <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-lightbulb text-blue-600"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-blue-800">Conseils pour bien remplir cette fiche</h3>
+                    <div class="text-sm text-blue-700 mt-1">
+                        <ul class="list-disc list-inside space-y-1">
+                            <li><strong>Type de client :</strong> Choisissez "Entreprise" si votre client est une société, même s'il s'agit d'un freelance avec SIRET.</li>
+                            <li><strong>Informations complètes :</strong> Plus vous renseignez d'informations, plus vos devis et factures seront professionnels.</li>
+                            <li><strong>Email obligatoire :</strong> L'email est nécessaire pour envoyer les devis et factures automatiquement.</li>
+                            <li><strong>SIRET et TVA :</strong> Ces informations sont importantes pour les entreprises et les échanges B2B.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const typeSelect = document.querySelector('select[name="customer[type]"]');
+            const companyFields = document.getElementById('company-fields');
+            const companyNameField = document.querySelector('input[name="customer[companyName]"]');
+
+            function toggleCompanyFields() {
+                if (typeSelect.value === 'company') {
+                    companyFields.style.display = 'block';
+                    companyNameField.required = true;
+                } else {
+                    companyFields.style.display = 'none';
+                    companyNameField.required = false;
+                }
+            }
+
+            // Initial state
+            toggleCompanyFields();
+
+            // Toggle on change
+            typeSelect.addEventListener('change', toggleCompanyFields);
+
+            // Auto-format SIRET
+            const siretField = document.querySelector('input[name="customer[siret]"]');
+            if (siretField) {
+                siretField.addEventListener('input', function() {
+                    // Remove non-digits
+                    this.value = this.value.replace(/\D/g, '');
+                    // Limit to 14 characters
+                    if (this.value.length > 14) {
+                        this.value = this.value.substring(0, 14);
+                    }
+                });
+            }
+
+            // Format phone number
+            const phoneField = document.querySelector('input[name="customer[phone]"]');
+            if (phoneField) {
+                phoneField.addEventListener('input', function() {
+                    // Simple French phone format
+                    let value = this.value.replace(/\D/g, '');
+                    if (value.length > 0) {
+                        value = value.replace(/(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5');
+                    }
+                    this.value = value;
+                });
+            }
+
+            // Auto-complete city from postal code (simulation)
+            const postalCodeField = document.querySelector('input[name="customer[postalCode]"]');
+            const cityField = document.querySelector('input[name="customer[city]"]');
+            
+            if (postalCodeField && cityField) {
+                postalCodeField.addEventListener('blur', function() {
+                    const code = this.value.trim();
+                    if (code.length === 5 && !cityField.value) {
+                        // Simulation simple - en réalité, vous pourriez utiliser une API
+                        const commonCities = {
+                            '75001': 'Paris',
+                            '69001': 'Lyon',
+                            '13001': 'Marseille',
+                            '31000': 'Toulouse',
+                            '06000': 'Nice'
+                        };
+                        
+                        if (commonCities[code]) {
+                            cityField.value = commonCities[code];
+                        }
+                    }
+                });
+            }
+
+            // Validation avant soumission
+            const form = document.getElementById('customer-form');
+            form.addEventListener('submit', function(e) {
+                const email = document.querySelector('input[name="customer[email]"]').value;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                
+                if (!emailRegex.test(email)) {
+                    e.preventDefault();
+                    alert('Veuillez saisir une adresse email valide.');
+                    return false;
+                }
+
+                // Validation SIRET si entreprise
+                if (typeSelect.value === 'company') {
+                    const siret = siretField.value.replace(/\s/g, '');
+                    if (siret && siret.length !== 14) {
+                        e.preventDefault();
+                        alert('Le SIRET doit contenir exactement 14 chiffres.');
+                        return false;
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

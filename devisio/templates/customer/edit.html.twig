@@ -1,0 +1,385 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier {{ customer.displayName }} - Clients - Devisio{% endblock %}
+{% block page_title %}Modifier {{ customer.displayName }}{% endblock %}
+
+{% block header_actions %}
+    <div class="flex space-x-3">
+        <a href="{{ path('app_customers_show', {id: customer.id}) }}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour au client
+        </a>
+        
+        <a href="{{ path('app_customers') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200">
+            <i class="fas fa-list mr-2"></i>
+            Liste des clients
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="max-w-4xl mx-auto">
+        <!-- Alerte si client inactif -->
+        {% if not customer.isActive %}
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                    <div>
+                        <h3 class="text-sm font-medium text-red-800">Client inactif</h3>
+                        <p class="text-sm text-red-700">Ce client est actuellement désactivé et n'apparaît pas dans les listes de sélection.</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="bg-white rounded-lg shadow">
+            {{ form_start(form, {'attr': {'class': 'space-y-6', 'id': 'customer-form'}}) }}
+                
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Modifier les informations du client</h3>
+                            <p class="text-sm text-gray-600 mt-1">Client créé le {{ customer.createdAt|date('d/m/Y à H:i') }}</p>
+                        </div>
+                        <div>
+                            {% if customer.isActive %}
+                                <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Actif
+                                </span>
+                            {% else %}
+                                <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-red-100 text-red-800">
+                                    <i class="fas fa-times-circle mr-1"></i>
+                                    Inactif
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Type de client -->
+                <div class="px-6 py-4">
+                    <div class="mb-6">
+                        {{ form_label(form.type, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.type, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                        {{ form_errors(form.type) }}
+                        {% if customer.quotes|length > 0 or customer.invoices|length > 0 %}
+                            <p class="text-xs text-amber-600 mt-1">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                Attention : Ce client a des devis ou factures. Modifier le type peut affecter l'affichage.
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Informations personnelles -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <h4 class="text-md font-medium text-gray-900 mb-4">
+                        <i class="fas fa-user mr-2 text-primary-600"></i>
+                        Informations personnelles
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            {{ form_label(form.firstName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.firstName, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.firstName) }}
+                        </div>
+                        
+                        <div>
+                            {{ form_label(form.lastName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.lastName, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.lastName) }}
+                        </div>
+                    </div>
+
+                    <!-- Champs entreprise -->
+                    <div id="company-fields" class="space-y-4" style="display: {{ customer.isCompany ? 'block' : 'none' }};">
+                        <div>
+                            {{ form_label(form.companyName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.companyName, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.companyName) }}
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                {{ form_label(form.siret, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(form.siret, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                {{ form_errors(form.siret) }}
+                            </div>
+                            
+                            <div>
+                                {{ form_label(form.vatNumber, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(form.vatNumber, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                {{ form_errors(form.vatNumber) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations de contact -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <h4 class="text-md font-medium text-gray-900 mb-4">
+                        <i class="fas fa-address-card mr-2 text-green-600"></i>
+                        Informations de contact
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            {{ form_label(form.email, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.email, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.email) }}
+                            {% if customer.quotes|length > 0 %}
+                                <p class="text-xs text-amber-600 mt-1">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Cet email est utilisé pour l'envoi des devis et factures.
+                                </p>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            {{ form_label(form.phone, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.phone, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.phone) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adresse -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <h4 class="text-md font-medium text-gray-900 mb-4">
+                        <i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>
+                        Adresse
+                    </h4>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            {{ form_label(form.address, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.address, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.address) }}
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                {{ form_label(form.postalCode, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(form.postalCode, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                {{ form_errors(form.postalCode) }}
+                            </div>
+                            
+                            <div>
+                                {{ form_label(form.city, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(form.city, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                {{ form_errors(form.city) }}
+                            </div>
+                            
+                            <div>
+                                {{ form_label(form.country, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(form.country, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                {{ form_errors(form.country) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Options -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <h4 class="text-md font-medium text-gray-900 mb-4">
+                        <i class="fas fa-cog mr-2 text-gray-600"></i>
+                        Options
+                    </h4>
+                    
+                    <div class="flex items-center">
+                        {{ form_widget(form.isActive, {'attr': {'class': 'h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded'}}) }}
+                        {{ form_label(form.isActive, null, {'label_attr': {'class': 'ml-2 text-sm text-gray-900'}}) }}
+                        {{ form_errors(form.isActive) }}
+                        <div class="ml-4">
+                            {% if not customer.isActive %}
+                                <p class="text-xs text-red-600">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                    Client actuellement inactif
+                                </p>
+                            {% else %}
+                                <p class="text-xs text-green-600">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Client actif
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations sur l'historique -->
+                {% if customer.quotes|length > 0 or customer.invoices|length > 0 %}
+                    <div class="px-6 py-4 border-t border-gray-200 bg-blue-50">
+                        <h4 class="text-md font-medium text-gray-900 mb-3">
+                            <i class="fas fa-history mr-2 text-blue-600"></i>
+                            Historique avec ce client
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-alt text-blue-600 mr-2"></i>
+                                <span class="text-gray-700">{{ customer.quotes|length }} devis créé{{ customer.quotes|length > 1 ? 's' : '' }}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-receipt text-green-600 mr-2"></i>
+                                <span class="text-gray-700">{{ customer.invoices|length }} facture{{ customer.invoices|length > 1 ? 's' : '' }} émise{{ customer.invoices|length > 1 ? 's' : '' }}</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-blue-700 mt-2">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Les modifications n'affecteront pas les documents déjà créés.
+                        </p>
+                    </div>
+                {% endif %}
+
+                <!-- Boutons d'action -->
+                <div class="px-6 py-4 border-t border-gray-200 flex justify-between">
+                    <a href="{{ path('app_customers_show', {id: customer.id}) }}" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <i class="fas fa-times mr-2"></i>
+                        Annuler
+                    </a>
+                    
+                    <div class="space-x-3">
+                        <button type="submit" class="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition duration-200">
+                            <i class="fas fa-save mr-2"></i>
+                            Enregistrer les modifications
+                        </button>
+                    </div>
+                </div>
+            {{ form_end(form) }}
+        </div>
+
+        <!-- Informations supplémentaires -->
+        <div class="mt-8 bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Informations système</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Date de création</label>
+                    <p class="text-sm text-gray-900">{{ customer.createdAt|date('d/m/Y à H:i') }}</p>
+                </div>
+                {% if customer.updatedAt != customer.createdAt %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Dernière modification</label>
+                        <p class="text-sm text-gray-900">{{ customer.updatedAt|date('d/m/Y à H:i') }}</p>
+                    </div>
+                {% endif %}
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Actions rapides</label>
+                    <div class="flex space-x-2">
+                        <a href="{{ path('app_quotes_new') }}?customer={{ customer.id }}" 
+                           class="text-blue-600 hover:text-blue-800 text-sm">
+                            <i class="fas fa-file-alt mr-1"></i>
+                            Nouveau devis
+                        </a>
+                        <a href="mailto:{{ customer.email }}" 
+                           class="text-green-600 hover:text-green-800 text-sm">
+                            <i class="fas fa-envelope mr-1"></i>
+                            Envoyer email
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const typeSelect = document.querySelector('select[name="customer[type]"]');
+            const companyFields = document.getElementById('company-fields');
+            const companyNameField = document.querySelector('input[name="customer[companyName]"]');
+
+            function toggleCompanyFields() {
+                if (typeSelect.value === 'company') {
+                    companyFields.style.display = 'block';
+                    companyNameField.required = true;
+                } else {
+                    companyFields.style.display = 'none';
+                    companyNameField.required = false;
+                }
+            }
+
+            // Toggle on change
+            typeSelect.addEventListener('change', function() {
+                toggleCompanyFields();
+                
+                // Avertissement si le client a des documents
+                const hasDocuments = {{ (customer.quotes|length + customer.invoices|length) > 0 ? 'true' : 'false' }};
+                if (hasDocuments) {
+                    const newType = this.value === 'company' ? 'Entreprise' : 'Particulier';
+                    if (!confirm(`Êtes-vous sûr de vouloir changer le type vers "${newType}" ? Ce client a des devis ou factures existants.`)) {
+                        this.value = this.getAttribute('data-original-value');
+                        toggleCompanyFields();
+                        return;
+                    }
+                }
+                
+                this.setAttribute('data-original-value', this.value);
+            });
+
+            // Store original value
+            typeSelect.setAttribute('data-original-value', typeSelect.value);
+
+            // Auto-format SIRET
+            const siretField = document.querySelector('input[name="customer[siret]"]');
+            if (siretField) {
+                siretField.addEventListener('input', function() {
+                    this.value = this.value.replace(/\D/g, '');
+                    if (this.value.length > 14) {
+                        this.value = this.value.substring(0, 14);
+                    }
+                });
+            }
+
+            // Format phone number
+            const phoneField = document.querySelector('input[name="customer[phone]"]');
+            if (phoneField) {
+                phoneField.addEventListener('input', function() {
+                    let value = this.value.replace(/\D/g, '');
+                    if (value.length > 0) {
+                        value = value.replace(/(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5');
+                    }
+                    this.value = value;
+                });
+            }
+
+            // Validation avant soumission
+            const form = document.getElementById('customer-form');
+            form.addEventListener('submit', function(e) {
+                const email = document.querySelector('input[name="customer[email]"]').value;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                
+                if (!emailRegex.test(email)) {
+                    e.preventDefault();
+                    alert('Veuillez saisir une adresse email valide.');
+                    return false;
+                }
+
+                // Validation SIRET si entreprise
+                if (typeSelect.value === 'company') {
+                    const siret = siretField.value.replace(/\s/g, '');
+                    if (siret && siret.length !== 14) {
+                        e.preventDefault();
+                        alert('Le SIRET doit contenir exactement 14 chiffres.');
+                        return false;
+                    }
+                }
+            });
+
+            // Avertissement pour email si le client a des documents
+            const emailField = document.querySelector('input[name="customer[email]"]');
+            const originalEmail = emailField.value;
+            
+            emailField.addEventListener('change', function() {
+                const hasDocuments = {{ (customer.quotes|length + customer.invoices|length) > 0 ? 'true' : 'false' }};
+                if (hasDocuments && this.value !== originalEmail) {
+                    if (!confirm('Ce client a des devis ou factures. Changer l\'email affectera les futurs envois. Continuer ?')) {
+                        this.value = originalEmail;
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

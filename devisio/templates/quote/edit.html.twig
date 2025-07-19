@@ -1,0 +1,420 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier le devis {{ quote.number }} - Devisio{% endblock %}
+{% block page_title %}Modifier le devis {{ quote.number }}{% endblock %}
+
+{% block header_actions %}
+    <div class="flex space-x-3">
+        <a href="{{ path('app_quotes_show', {id: quote.id}) }}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour au devis
+        </a>
+        
+        <a href="{{ path('app_quotes_pdf', {id: quote.id}) }}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200">
+            <i class="fas fa-file-pdf mr-2"></i>
+            Aperçu PDF
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="bg-white rounded-lg shadow">
+        {{ form_start(form, {'attr': {'class': 'space-y-6', 'id': 'quote-form'}}) }}
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-gray-900">Informations générales</h3>
+                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full 
+                        {% if quote.status == 'draft' %}bg-gray-100 text-gray-800{% endif %}
+                        {% if quote.status == 'sent' %}bg-blue-100 text-blue-800{% endif %}
+                        {% if quote.status == 'accepted' %}bg-green-100 text-green-800{% endif %}
+                        {% if quote.status == 'rejected' %}bg-red-100 text-red-800{% endif %}
+                        {% if quote.status == 'expired' %}bg-yellow-100 text-yellow-800{% endif %}
+                    ">
+                        {{ quote.statusLabel }}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        {{ form_label(form.customer, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.customer, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent', 'disabled': not quote.canBeModified}}) }}
+                        {{ form_errors(form.customer) }}
+                        {% if not quote.canBeModified %}
+                            <p class="text-xs text-gray-500 mt-1">Le client ne peut pas être modifié après envoi</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        {{ form_label(form.subject, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.subject, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                        {{ form_errors(form.subject) }}
+                    </div>
+                </div>
+                
+                <div>
+                    {{ form_label(form.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                    {{ form_widget(form.description, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                    {{ form_errors(form.description) }}
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        {{ form_label(form.quoteDate, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.quoteDate, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                        {{ form_errors(form.quoteDate) }}
+                    </div>
+                    
+                    <div>
+                        {{ form_label(form.validUntil, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.validUntil, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                        {{ form_errors(form.validUntil) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-200">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Produits et services</h3>
+                    <button type="button" id="add-item" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200">
+                        <i class="fas fa-plus mr-2"></i>
+                        Ajouter une ligne
+                    </button>
+                </div>
+                
+                <div id="quote-items" class="space-y-4" data-prototype="{{ form_widget(form.items.vars.prototype)|e('html_attr') }}">
+                    {% for item in form.items %}
+                        <div class="quote-item bg-gray-50 p-4 rounded-lg border">
+                            <div class="flex justify-between items-start mb-4">
+                                <h4 class="font-medium text-gray-900">Ligne {{ loop.index }}</h4>
+                                {% if form.items|length > 1 %}
+                                    <button type="button" class="remove-item text-red-600 hover:text-red-800">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    {{ form_label(item.product, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                    {{ form_widget(item.product, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent product-select'}}) }}
+                                    {{ form_errors(item.product) }}
+                                </div>
+                                
+                                <div>
+                                    {{ form_label(item.productName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                    {{ form_widget(item.productName, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                    {{ form_errors(item.productName) }}
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                {{ form_label(item.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(item.description, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                {{ form_errors(item.description) }}
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+                                <div>
+                                    {{ form_label(item.unitPrice, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                    {{ form_widget(item.unitPrice, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent price-input'}}) }}
+                                    {{ form_errors(item.unitPrice) }}
+                                </div>
+                                
+                                <div>
+                                    {{ form_label(item.quantity, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                    {{ form_widget(item.quantity, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent quantity-input'}}) }}
+                                    {{ form_errors(item.quantity) }}
+                                </div>
+                                
+                                <div>
+                                    {{ form_label(item.unit, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                    {{ form_widget(item.unit, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                    {{ form_errors(item.unit) }}
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Total</label>
+                                    <div class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 item-total">
+                                        {{ item.vars.data.formattedTotal|default('0,00 €') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-200">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        {{ form_label(form.terms, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.terms, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                        {{ form_errors(form.terms) }}
+                    </div>
+                    
+                    <div>
+                        {{ form_label(form.notes, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.notes, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                        {{ form_errors(form.notes) }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Totaux -->
+            <div class="px-6 py-4 border-t border-gray-200">
+                <div class="flex justify-end">
+                    <div class="w-full max-w-md">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm text-gray-600">Sous-total HT:</span>
+                                <span class="text-sm font-medium" id="subtotal">{{ quote.subtotal|number_format(2, ',', ' ') }} €</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm text-gray-600">TVA ({{ quote.company.vatRate }}%):</span>
+                                <span class="text-sm font-medium" id="vat-amount">{{ quote.vatAmount|number_format(2, ',', ' ') }} €</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-2 border-t border-gray-200">
+                                <span class="text-base font-semibold text-gray-900">Total TTC:</span>
+                                <span class="text-base font-semibold text-primary-600" id="total">{{ quote.total|number_format(2, ',', ' ') }} €</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations supplémentaires -->
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                    <div>
+                        <span class="font-medium">Créé le:</span>
+                        {{ quote.createdAt|date('d/m/Y à H:i') }}
+                    </div>
+                    <div>
+                        <span class="font-medium">Créé par:</span>
+                        {{ quote.createdBy.fullName }}
+                    </div>
+                    <div>
+                        <span class="font-medium">Dernière modification:</span>
+                        {{ quote.updatedAt|date('d/m/Y à H:i') }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-200 flex justify-between">
+                <a href="{{ path('app_quotes_show', {id: quote.id}) }}" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition duration-200">
+                    <i class="fas fa-times mr-2"></i>
+                    Annuler
+                </a>
+                
+                <div class="space-x-3">
+                    <button type="submit" name="action" value="save" class="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition duration-200">
+                        <i class="fas fa-save mr-2"></i>
+                        Enregistrer les modifications
+                    </button>
+                    {% if quote.canBeSent %}
+                        <button type="submit" name="action" value="save_and_send" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            Enregistrer et envoyer
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        {{ form_end(form) }}
+    </div>
+
+    <!-- Modal de confirmation pour les changements importants -->
+    {% if not quote.canBeModified %}
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" id="warning-modal" style="display: none;">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-exclamation-triangle text-yellow-500 text-xl mr-3"></i>
+                    <h3 class="text-lg font-semibold text-gray-900">Attention</h3>
+                </div>
+                <p class="text-gray-600 mb-6">
+                    Ce devis a déjà été envoyé. Certaines modifications peuvent affecter la validité du devis envoyé au client.
+                </p>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700" onclick="closeWarningModal()">
+                        Annuler
+                    </button>
+                    <button type="button" class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700" onclick="confirmChanges()">
+                        Continuer
+                    </button>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('quote-form');
+            const itemsContainer = document.getElementById('quote-items');
+            const addItemBtn = document.getElementById('add-item');
+            let itemIndex = {{ form.items|length }};
+            const vatRate = {{ quote.company.vatRate|default(20) }} / 100;
+
+            // Add item functionality
+            addItemBtn.addEventListener('click', function() {
+                const prototype = itemsContainer.dataset.prototype;
+                const newItem = prototype.replace(/__name__/g, itemIndex);
+                
+                const div = document.createElement('div');
+                div.className = 'quote-item bg-gray-50 p-4 rounded-lg border';
+                div.innerHTML = newItem;
+                
+                itemsContainer.appendChild(div);
+                itemIndex++;
+                
+                // Add remove functionality to new item
+                const removeBtn = div.querySelector('.remove-item');
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', function() {
+                        div.remove();
+                        calculateTotals();
+                    });
+                }
+                
+                // Add calculation listeners to new item
+                addCalculationListeners(div);
+                calculateTotals();
+            });
+
+            // Remove item functionality for existing items
+            document.querySelectorAll('.remove-item').forEach(button => {
+                button.addEventListener('click', function() {
+                    if (itemsContainer.children.length > 1) {
+                        button.closest('.quote-item').remove();
+                        calculateTotals();
+                    }
+                });
+            });
+
+            // Product selection functionality
+            document.querySelectorAll('.product-select').forEach(select => {
+                select.addEventListener('change', function() {
+                    if (this.value) {
+                        // Simulate product data (in real app, this would be AJAX)
+                        const item = this.closest('.quote-item');
+                        const selectedOption = this.options[this.selectedIndex];
+                        const productName = selectedOption.text;
+                        
+                        // Update fields based on selected product
+                        const nameInput = item.querySelector('input[name*="[productName]"]');
+                        if (nameInput) nameInput.value = productName;
+                        
+                        calculateItemTotal(item);
+                    }
+                });
+            });
+
+            // Add calculation listeners to existing items
+            document.querySelectorAll('.quote-item').forEach(item => {
+                addCalculationListeners(item);
+            });
+
+            function addCalculationListeners(item) {
+                const priceInput = item.querySelector('.price-input');
+                const quantityInput = item.querySelector('.quantity-input');
+                
+                [priceInput, quantityInput].forEach(input => {
+                    if (input) {
+                        input.addEventListener('input', function() {
+                            calculateItemTotal(item);
+                        });
+                    }
+                });
+            }
+
+            function calculateItemTotal(item) {
+                const priceInput = item.querySelector('.price-input');
+                const quantityInput = item.querySelector('.quantity-input');
+                const totalDiv = item.querySelector('.item-total');
+                
+                if (priceInput && quantityInput && totalDiv) {
+                    const price = parseFloat(priceInput.value) || 0;
+                    const quantity = parseFloat(quantityInput.value) || 0;
+                    const total = price * quantity;
+                    
+                    totalDiv.textContent = total.toLocaleString('fr-FR', {
+                        style: 'currency',
+                        currency: 'EUR'
+                    });
+                }
+                
+                calculateTotals();
+            }
+
+            function calculateTotals() {
+                let subtotal = 0;
+                
+                document.querySelectorAll('.quote-item').forEach(item => {
+                    const priceInput = item.querySelector('.price-input');
+                    const quantityInput = item.querySelector('.quantity-input');
+                    
+                    if (priceInput && quantityInput) {
+                        const price = parseFloat(priceInput.value) || 0;
+                        const quantity = parseFloat(quantityInput.value) || 0;
+                        subtotal += price * quantity;
+                    }
+                });
+                
+                const vatAmount = subtotal * vatRate;
+                const total = subtotal + vatAmount;
+                
+                // Update totals display
+                const subtotalEl = document.getElementById('subtotal');
+                const vatEl = document.getElementById('vat-amount');
+                const totalEl = document.getElementById('total');
+                
+                if (subtotalEl) {
+                    subtotalEl.textContent = subtotal.toLocaleString('fr-FR', {
+                        style: 'currency',
+                        currency: 'EUR'
+                    });
+                }
+                
+                if (vatEl) {
+                    vatEl.textContent = vatAmount.toLocaleString('fr-FR', {
+                        style: 'currency',
+                        currency: 'EUR'
+                    });
+                }
+                
+                if (totalEl) {
+                    totalEl.textContent = total.toLocaleString('fr-FR', {
+                        style: 'currency',
+                        currency: 'EUR'
+                    });
+                }
+            }
+
+            // Initial calculation
+            calculateTotals();
+
+            // Warning modal functions
+            window.closeWarningModal = function() {
+                document.getElementById('warning-modal').style.display = 'none';
+            };
+
+            window.confirmChanges = function() {
+                closeWarningModal();
+                // Continue with form submission or other actions
+            };
+
+            // Show warning for sent quotes
+            {% if not quote.canBeModified %}
+                const importantInputs = document.querySelectorAll('input[name*="customer"], input[name*="subject"]');
+                importantInputs.forEach(input => {
+                    input.addEventListener('change', function() {
+                        document.getElementById('warning-modal').style.display = 'flex';
+                    });
+                });
+            {% endif %}
+        });
+    </script>
+{% endblock %}

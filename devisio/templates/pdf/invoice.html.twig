@@ -1,9 +1,9 @@
-{# templates/pdf/quote.html.twig #}
+{# templates/pdf/invoice.html.twig #}
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Devis {{ quote.number }}</title>
+    <title>Facture {{ invoice.number }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -17,7 +17,7 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 30px;
-            border-bottom: 2px solid #3b82f6;
+            border-bottom: 2px solid #10b981;
             padding-bottom: 20px;
         }
         .company-info {
@@ -26,17 +26,17 @@
         .company-name {
             font-size: 24px;
             font-weight: bold;
-            color: #3b82f6;
+            color: #10b981;
             margin-bottom: 10px;
         }
-        .quote-info {
+        .invoice-info {
             text-align: right;
             flex: 1;
         }
-        .quote-number {
+        .invoice-number {
             font-size: 18px;
             font-weight: bold;
-            color: #3b82f6;
+            color: #10b981;
             margin-bottom: 5px;
         }
         .addresses {
@@ -51,13 +51,13 @@
         .address-title {
             font-weight: bold;
             margin-bottom: 10px;
-            color: #3b82f6;
+            color: #10b981;
         }
-        .quote-details {
+        .invoice-details {
             margin-bottom: 30px;
         }
-        .quote-details h3 {
-            color: #3b82f6;
+        .invoice-details h3 {
+            color: #10b981;
             margin-bottom: 10px;
         }
         .items-table {
@@ -74,7 +74,7 @@
         .items-table th {
             background-color: #f8f9fa;
             font-weight: bold;
-            color: #3b82f6;
+            color: #10b981;
         }
         .items-table td.number {
             text-align: right;
@@ -95,7 +95,18 @@
         .totals .total-row {
             font-weight: bold;
             background-color: #f8f9fa;
-            color: #3b82f6;
+            color: #10b981;
+        }
+        .payment-info {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f0fdf4;
+            border: 1px solid #10b981;
+            border-radius: 5px;
+        }
+        .payment-info h4 {
+            color: #10b981;
+            margin-bottom: 10px;
         }
         .conditions {
             margin-top: 30px;
@@ -103,7 +114,7 @@
             border-top: 1px solid #ddd;
         }
         .conditions h4 {
-            color: #3b82f6;
+            color: #10b981;
             margin-bottom: 10px;
         }
         .footer {
@@ -124,71 +135,92 @@
         }
         .status-draft { background-color: #6b7280; color: white; }
         .status-sent { background-color: #3b82f6; color: white; }
-        .status-accepted { background-color: #10b981; color: white; }
-        .status-rejected { background-color: #ef4444; color: white; }
-        .status-expired { background-color: #f59e0b; color: white; }
+        .status-paid { background-color: #10b981; color: white; }
+        .status-overdue { background-color: #ef4444; color: white; }
+        .status-cancelled { background-color: #f59e0b; color: white; }
+        .due-date-warning {
+            background-color: #fef2f2;
+            border: 1px solid #ef4444;
+            color: #dc2626;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <div class="company-info">
-            <div class="company-name">{{ quote.company.name }}</div>
-            <div>{{ quote.company.address }}</div>
-            <div>{{ quote.company.postalCode }} {{ quote.company.city }}</div>
-            <div>{{ quote.company.country }}</div>
-            {% if quote.company.phone %}
-                <div>Tél: {{ quote.company.phone }}</div>
+            <div class="company-name">{{ invoice.company.name }}</div>
+            <div>{{ invoice.company.address }}</div>
+            <div>{{ invoice.company.postalCode }} {{ invoice.company.city }}</div>
+            <div>{{ invoice.company.country }}</div>
+            {% if invoice.company.phone %}
+                <div>Tél: {{ invoice.company.phone }}</div>
             {% endif %}
-            {% if quote.company.email %}
-                <div>Email: {{ quote.company.email }}</div>
+            {% if invoice.company.email %}
+                <div>Email: {{ invoice.company.email }}</div>
             {% endif %}
-            {% if quote.company.website %}
-                <div>{{ quote.company.website }}</div>
+            {% if invoice.company.website %}
+                <div>{{ invoice.company.website }}</div>
             {% endif %}
         </div>
-        <div class="quote-info">
-            <div class="quote-number">DEVIS {{ quote.number }}</div>
-            <div>Date: {{ quote.quoteDate|date('d/m/Y') }}</div>
-            <div>Valide jusqu'au: {{ quote.validUntil|date('d/m/Y') }}</div>
+        <div class="invoice-info">
+            <div class="invoice-number">FACTURE {{ invoice.number }}</div>
+            <div>Date: {{ invoice.invoiceDate|date('d/m/Y') }}</div>
+            <div>Échéance: {{ invoice.dueDate|date('d/m/Y') }}</div>
             <div style="margin-top: 10px;">
-                <span class="status-badge status-{{ quote.status }}">{{ quote.statusLabel }}</span>
+                <span class="status-badge status-{{ invoice.status }}">{{ invoice.statusLabel }}</span>
             </div>
+            {% if invoice.isOverdue %}
+                <div style="margin-top: 10px; color: #dc2626; font-weight: bold;">
+                    EN RETARD DE {{ (invoice.daysUntilDue * -1) }} JOUR(S)
+                </div>
+            {% endif %}
         </div>
     </div>
+
+    {% if invoice.isOverdue %}
+        <div class="due-date-warning">
+            <strong>⚠️ FACTURE EN RETARD</strong><br>
+            Cette facture était due le {{ invoice.dueDate|date('d/m/Y') }}. 
+            Merci de procéder au règlement dans les plus brefs délais.
+        </div>
+    {% endif %}
 
     <div class="addresses">
         <div class="address-block">
             <div class="address-title">Entreprise</div>
-            <div><strong>{{ quote.company.name }}</strong></div>
-            {% if quote.company.siret %}
-                <div>SIRET: {{ quote.company.siret }}</div>
+            <div><strong>{{ invoice.company.name }}</strong></div>
+            {% if invoice.company.siret %}
+                <div>SIRET: {{ invoice.company.siret }}</div>
             {% endif %}
-            {% if quote.company.vatNumber %}
-                <div>TVA: {{ quote.company.vatNumber }}</div>
+            {% if invoice.company.vatNumber %}
+                <div>TVA: {{ invoice.company.vatNumber }}</div>
             {% endif %}
-            <div>{{ quote.company.fullAddress }}</div>
+            <div>{{ invoice.company.fullAddress }}</div>
         </div>
         <div class="address-block">
             <div class="address-title">Client</div>
-            <div><strong>{{ quote.customer.displayName }}</strong></div>
-            {% if quote.customer.isCompany and quote.customer.siret %}
-                <div>SIRET: {{ quote.customer.siret }}</div>
+            <div><strong>{{ invoice.customer.displayName }}</strong></div>
+            {% if invoice.customer.isCompany and invoice.customer.siret %}
+                <div>SIRET: {{ invoice.customer.siret }}</div>
             {% endif %}
-            {% if quote.customer.isCompany and quote.customer.vatNumber %}
-                <div>TVA: {{ quote.customer.vatNumber }}</div>
+            {% if invoice.customer.isCompany and invoice.customer.vatNumber %}
+                <div>TVA: {{ invoice.customer.vatNumber }}</div>
             {% endif %}
-            <div>{{ quote.customer.fullAddress }}</div>
-            <div>{{ quote.customer.email }}</div>
-            {% if quote.customer.phone %}
-                <div>{{ quote.customer.phone }}</div>
+            <div>{{ invoice.customer.fullAddress }}</div>
+            <div>{{ invoice.customer.email }}</div>
+            {% if invoice.customer.phone %}
+                <div>{{ invoice.customer.phone }}</div>
             {% endif %}
         </div>
     </div>
 
-    <div class="quote-details">
-        <h3>{{ quote.subject }}</h3>
-        {% if quote.description %}
-            <p>{{ quote.description|nl2br }}</p>
+    <div class="invoice-details">
+        <h3>{{ invoice.subject }}</h3>
+        {% if invoice.description %}
+            <p>{{ invoice.description|nl2br }}</p>
         {% endif %}
     </div>
 
@@ -203,7 +235,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for item in quote.items %}
+            {% for item in invoice.items %}
                 <tr>
                     <td>
                         <strong>{{ item.productName }}</strong>
@@ -224,41 +256,45 @@
         <table>
             <tr>
                 <td>Sous-total HT:</td>
-                <td class="number">{{ quote.subtotal|number_format(2, ',', ' ') }} €</td>
+                <td class="number">{{ invoice.formattedSubtotal }}</td>
             </tr>
             <tr>
-                <td>TVA ({{ quote.company.vatRate }}%):</td>
-                <td class="number">{{ quote.vatAmount|number_format(2, ',', ' ') }} €</td>
+                <td>TVA ({{ invoice.company.vatRate }}%):</td>
+                <td class="number">{{ invoice.formattedVatAmount }}</td>
             </tr>
             <tr class="total-row">
                 <td>Total TTC:</td>
-                <td class="number">{{ quote.total|number_format(2, ',', ' ') }} €</td>
+                <td class="number">{{ invoice.formattedTotal }}</td>
             </tr>
-        </table>
+        </tbody>
+    </table>
     </div>
 
-    {% if quote.terms %}
-        <div class="conditions">
-            <h4>Conditions particulières</h4>
-            <p>{{ quote.terms|nl2br }}</p>
+    {% if invoice.paymentTerms %}
+        <div class="payment-info">
+            <h4>Modalités de paiement</h4>
+            <p>{{ invoice.paymentTerms|nl2br }}</p>
         </div>
     {% endif %}
 
-    {% if quote.notes %}
+    {% if invoice.notes %}
         <div class="conditions">
             <h4>Notes</h4>
-            <p>{{ quote.notes|nl2br }}</p>
+            <p>{{ invoice.notes|nl2br }}</p>
         </div>
     {% endif %}
 
     <div class="footer">
-        <p>{{ quote.company.name }} - {{ quote.company.fullAddress }}</p>
-        {% if quote.company.siret %}
-            <p>SIRET: {{ quote.company.siret }}</p>
+        <p>{{ invoice.company.name }} - {{ invoice.company.fullAddress }}</p>
+        {% if invoice.company.siret %}
+            <p>SIRET: {{ invoice.company.siret }}</p>
         {% endif %}
-        {% if quote.company.vatNumber %}
-            <p>N° TVA: {{ quote.company.vatNumber }}</p>
+        {% if invoice.company.vatNumber %}
+            <p>N° TVA: {{ invoice.company.vatNumber }}</p>
         {% endif %}
+        <p style="margin-top: 10px;">
+            <strong>En cas de retard de paiement, des pénalités de retard pourront être appliquées.</strong>
+        </p>
     </div>
 </body>
 </html>
