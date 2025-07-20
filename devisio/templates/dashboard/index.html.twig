@@ -9,10 +9,10 @@
             <i class="fas fa-plus mr-2"></i>
             Nouveau devis
         </a>
-        <button disabled class="bg-gray-400 text-white px-4 py-2 rounded-lg cursor-not-allowed">
+        <a href="{{ path('app_invoices_new') }}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200">
             <i class="fas fa-plus mr-2"></i>
-            Nouvelle facture <span class="text-xs">(bientôt)</span>
-        </button>
+            Nouvelle facture
+        </a>
     </div>
 {% endblock %}
 
@@ -20,96 +20,176 @@
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <!-- Devis -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <a href="{{ path('app_quotes') }}" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition duration-200 block">
             <div class="flex items-center">
                 <div class="p-3 rounded-full bg-blue-100 text-blue-600">
                     <i class="fas fa-file-alt text-xl"></i>
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600">Devis</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ stats.quotes.total }}</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.quotes.total ?? 0 }}</p>
                 </div>
             </div>
             <div class="mt-4">
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-500">Brouillons</span>
-                    <span class="text-gray-700">{{ stats.quotes.draft }}</span>
+                    <span class="text-gray-700">{{ stats.quotes.draft ?? 0 }}</span>
                 </div>
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-500">Envoyés</span>
-                    <span class="text-blue-600">{{ stats.quotes.sent }}</span>
+                    <span class="text-blue-600">{{ stats.quotes.sent ?? 0 }}</span>
                 </div>
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-500">Acceptés</span>
-                    <span class="text-green-600">{{ stats.quotes.accepted }}</span>
+                    <span class="text-green-600">{{ stats.quotes.accepted ?? 0 }}</span>
                 </div>
             </div>
-        </div>
+        </a>
 
         <!-- Factures -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <a href="{{ path('app_invoices') }}" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition duration-200 block">
             <div class="flex items-center">
                 <div class="p-3 rounded-full bg-green-100 text-green-600">
                     <i class="fas fa-receipt text-xl"></i>
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600">Factures</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ stats.invoices.total }}</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.invoices.total ?? 0 }}</p>
                 </div>
             </div>
             <div class="mt-4">
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-500">Brouillons</span>
-                    <span class="text-gray-700">{{ stats.invoices.draft }}</span>
+                    <span class="text-gray-700">{{ stats.invoices.draft ?? 0 }}</span>
                 </div>
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-500">Envoyées</span>
-                    <span class="text-blue-600">{{ stats.invoices.sent }}</span>
+                    <span class="text-blue-600">{{ stats.invoices.sent ?? 0 }}</span>
                 </div>
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-500">Payées</span>
-                    <span class="text-green-600">{{ stats.invoices.paid }}</span>
+                    <span class="text-green-600">{{ stats.invoices.paid ?? 0 }}</span>
                 </div>
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-500">En retard</span>
-                    <span class="text-red-600">{{ stats.invoices.overdue }}</span>
+                    <span class="text-red-600">{{ stats.invoices.overdue ?? 0 }}</span>
                 </div>
             </div>
-        </div>
+        </a>
 
         <!-- Clients -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <a href="{{ path('app_customers') }}" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition duration-200 block">
             <div class="flex items-center">
                 <div class="p-3 rounded-full bg-purple-100 text-purple-600">
                     <i class="fas fa-users text-xl"></i>
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600">Clients</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ stats.customers }}</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.customers.total ?? 0 }}</p>
                 </div>
             </div>
             <div class="mt-4">
-                <span class="text-sm text-gray-400">
-                    Bientôt disponible
-                </span>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Particuliers</span>
+                    <span class="text-gray-700">{{ stats.customers.individuals ?? 0 }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Entreprises</span>
+                    <span class="text-purple-600">{{ stats.customers.companies ?? 0 }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Actifs</span>
+                    <span class="text-green-600">{{ stats.customers.active ?? 0 }}</span>
+                </div>
             </div>
-        </div>
+        </a>
 
         <!-- Produits -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <a href="{{ path('app_products') }}" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition duration-200 block">
             <div class="flex items-center">
                 <div class="p-3 rounded-full bg-orange-100 text-orange-600">
                     <i class="fas fa-box text-xl"></i>
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600">Produits</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ stats.products }}</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.products.total ?? 0 }}</p>
                 </div>
             </div>
             <div class="mt-4">
-                <span class="text-sm text-gray-400">
-                    Bientôt disponible
-                </span>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Services</span>
+                    <span class="text-gray-700">{{ stats.products.services ?? 0 }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Produits</span>
+                    <span class="text-orange-600">{{ stats.products.products ?? 0 }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Actifs</span>
+                    <span class="text-green-600">{{ stats.products.active ?? 0 }}</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Métriques financières -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">CA encaissé</p>
+                    <p class="text-2xl font-bold text-green-600">
+                        {% set total_revenue = 0 %}
+                        {% for month in monthly_revenue %}
+                            {% set total_revenue = total_revenue + month.amount %}
+                        {% endfor %}
+                        {{ total_revenue|number_format(0, ',', ' ') }} €
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1">12 derniers mois</p>
+                </div>
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <i class="fas fa-euro-sign text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">En attente</p>
+                    <p class="text-2xl font-bold text-orange-600">
+                        {% set outstanding = 0 %}
+                        {% for invoice in recent_invoices %}
+                            {% if invoice.status in ['sent', 'overdue'] %}
+                                {% set outstanding = outstanding + invoice.total %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ outstanding|number_format(0, ',', ' ') }} €
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1">Factures impayées</p>
+                </div>
+                <div class="p-3 rounded-full bg-orange-100 text-orange-600">
+                    <i class="fas fa-hourglass-half text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Taux conversion</p>
+                    <p class="text-2xl font-bold text-blue-600">
+                        {% if (stats.quotes.total ?? 0) > 0 %}
+                            {{ (((stats.invoices.total ?? 0) / (stats.quotes.total ?? 1)) * 100)|number_format(0) }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1">Devis → Factures</p>
+                </div>
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <i class="fas fa-chart-line text-xl"></i>
+                </div>
             </div>
         </div>
     </div>
@@ -118,7 +198,7 @@
         <!-- Activité récente -->
         <div class="bg-white rounded-lg shadow">
             <div class="p-6 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Activité récente</h3>
+                <h3 class="text-lg font-semibold text-gray-900">Devis récents</h3>
             </div>
             <div class="p-6">
                 <div class="space-y-4">
@@ -182,9 +262,9 @@
                     {% endfor %}
                 </div>
                 <div class="mt-6">
-                    <span class="w-full bg-gray-50 text-gray-400 py-2 px-4 rounded-lg text-center block cursor-not-allowed">
-                        Bientôt disponible
-                    </span>
+                    <a href="{{ path('app_invoices') }}" class="w-full bg-green-50 text-green-600 py-2 px-4 rounded-lg hover:bg-green-100 transition duration-200 text-center block">
+                        Voir toutes les factures
+                    </a>
                 </div>
             </div>
         </div>
@@ -222,12 +302,17 @@
                                 </p>
                             </div>
                             <div class="ml-4">
-                                <span class="text-gray-400">
+                                <a href="{{ path('app_invoices_show', {id: invoice.id}) }}" class="text-red-600 hover:text-red-800">
                                     <i class="fas fa-eye"></i>
-                                </span>
+                                </a>
                             </div>
                         </div>
                     {% endfor %}
+                </div>
+                <div class="mt-6">
+                    <a href="{{ path('app_invoices') }}?status=overdue" class="w-full bg-red-50 text-red-600 py-2 px-4 rounded-lg hover:bg-red-100 transition duration-200 text-center block">
+                        Voir toutes les factures en retard
+                    </a>
                 </div>
             </div>
         </div>
@@ -299,35 +384,35 @@
                     </div>
                 </a>
                 
-                <div class="flex items-center p-4 bg-gray-50 rounded-lg cursor-not-allowed">
-                    <div class="p-2 bg-gray-100 rounded-lg">
-                        <i class="fas fa-user-plus text-gray-400"></i>
+                <a href="{{ path('app_invoices_new') }}" class="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition duration-200">
+                    <div class="p-2 bg-green-100 rounded-lg">
+                        <i class="fas fa-receipt text-green-600"></i>
                     </div>
                     <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-400">Nouveau client</p>
-                        <p class="text-xs text-gray-400">Bientôt disponible</p>
+                        <p class="text-sm font-medium text-gray-900">Nouvelle facture</p>
+                        <p class="text-xs text-gray-500">Créer une facture</p>
                     </div>
-                </div>
+                </a>
                 
-                <div class="flex items-center p-4 bg-gray-50 rounded-lg cursor-not-allowed">
-                    <div class="p-2 bg-gray-100 rounded-lg">
-                        <i class="fas fa-box text-gray-400"></i>
+                <a href="{{ path('app_customers_new') }}" class="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition duration-200">
+                    <div class="p-2 bg-purple-100 rounded-lg">
+                        <i class="fas fa-user-plus text-purple-600"></i>
                     </div>
                     <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-400">Nouveau produit</p>
-                        <p class="text-xs text-gray-400">Bientôt disponible</p>
+                        <p class="text-sm font-medium text-gray-900">Nouveau client</p>
+                        <p class="text-xs text-gray-500">Ajouter un client</p>
                     </div>
-                </div>
+                </a>
                 
-                <div class="flex items-center p-4 bg-gray-50 rounded-lg cursor-not-allowed">
-                    <div class="p-2 bg-gray-100 rounded-lg">
-                        <i class="fas fa-receipt text-gray-400"></i>
+                <a href="{{ path('app_products_new') }}" class="flex items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition duration-200">
+                    <div class="p-2 bg-orange-100 rounded-lg">
+                        <i class="fas fa-box text-orange-600"></i>
                     </div>
                     <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-400">Factures</p>
-                        <p class="text-xs text-gray-400">Bientôt disponible</p>
+                        <p class="text-sm font-medium text-gray-900">Nouveau produit</p>
+                        <p class="text-xs text-gray-500">Ajouter un produit</p>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
     </div>

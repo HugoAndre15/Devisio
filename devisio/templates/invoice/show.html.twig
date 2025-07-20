@@ -1,0 +1,419 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Facture {{ invoice.number }} - Devisio{% endblock %}
+{% block page_title %}Facture {{ invoice.number }}{% endblock %}
+
+{% block header_actions %}
+    <div class="flex space-x-3">
+        <a href="{{ path('app_invoices') }}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour aux factures
+        </a>
+        
+        {% if invoice.canBeModified and is_granted('edit', invoice) %}
+            <a href="{{ path('app_invoices_edit', {id: invoice.id}) }}" class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition duration-200">
+                <i class="fas fa-edit mr-2"></i>
+                Modifier
+            </a>
+        {% endif %}
+        
+        <a href="{{ path('app_invoices_pdf', {id: invoice.id}) }}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200">
+            <i class="fas fa-file-pdf mr-2"></i>
+            PDF
+        </a>
+        
+        <form action="{{ path('app_invoices_duplicate', {id: invoice.id}) }}" method="post" style="display: inline;">
+            <input type="hidden" name="_token" value="{{ csrf_token('duplicate' ~ invoice.id) }}">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200">
+                <i class="fas fa-copy mr-2"></i>
+                Dupliquer
+            </button>
+        </form>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Contenu principal -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- En-tête de la facture -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900">{{ invoice.subject }}</h1>
+                        <p class="text-lg text-gray-600 mt-2">{{ invoice.number }}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-flex px-3 py-2 text-sm font-semibold rounded-full 
+                            {% if invoice.status == 'draft' %}bg-gray-100 text-gray-800{% endif %}
+                            {% if invoice.status == 'sent' %}bg-blue-100 text-blue-800{% endif %}
+                            {% if invoice.status == 'paid' %}bg-green-100 text-green-800{% endif %}
+                            {% if invoice.status == 'overdue' %}bg-red-100 text-red-800{% endif %}
+                            {% if invoice.status == 'cancelled' %}bg-orange-100 text-orange-800{% endif %}
+                        ">
+                            {{ invoice.statusLabel }}
+                        </span>
+                        {% if invoice.isOverdue %}
+                            <p class="text-sm text-red-600 mt-1">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                En retard de {{ (invoice.daysUntilDue * -1) }} jour(s)
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if invoice.description %}
+                    <div class="prose max-w-none">
+                        {{ invoice.description|nl2br }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Informations de la facture -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Informations</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500">Date de facture</label>
+                        <p class="text-sm text-gray-900">{{ invoice.invoiceDate|date('d/m/Y') }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500">Date d'échéance</label>
+                        <p class="text-sm {{ invoice.isOverdue ? 'text-red-600 font-medium' : 'text-gray-900' }}">
+                            {{ invoice.dueDate|date('d/m/Y') }}
+                            {% if invoice.isOverdue %}
+                                <i class="fas fa-exclamation-triangle ml-1"></i>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500">Créé par</label>
+                        <p class="text-sm text-gray-900">{{ invoice.createdBy.fullName }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500">Date de création</label>
+                        <p class="text-sm text-gray-900">{{ invoice.createdAt|date('d/m/Y à H:i') }}</p>
+                    </div>
+                    {% if invoice.sentAt %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500">Envoyée le</label>
+                            <p class="text-sm text-gray-900">{{ invoice.sentAt|date('d/m/Y à H:i') }}</p>
+                        </div>
+                    {% endif %}
+                    {% if invoice.paidAt %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500">Payée le</label>
+                            <p class="text-sm text-green-600 font-medium">{{ invoice.paidAt|date('d/m/Y à H:i') }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Articles/Produits -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Articles</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Produit/Service
+                                </th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Prix unitaire
+                                </th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Quantité
+                                </th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Unité
+                                </th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Total
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for item in invoice.items %}
+                                <tr>
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ item.productName }}</div>
+                                        {% if item.description %}
+                                            <div class="text-sm text-gray-500">{{ item.description }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-4 text-right text-sm text-gray-900">
+                                        {{ item.formattedUnitPrice }}
+                                    </td>
+                                    <td class="px-6 py-4 text-right text-sm text-gray-900">
+                                        {{ item.quantity }}
+                                    </td>
+                                    <td class="px-6 py-4 text-center text-sm text-gray-900">
+                                        {{ item.unit }}
+                                    </td>
+                                    <td class="px-6 py-4 text-right text-sm font-medium text-gray-900">
+                                        {{ item.formattedTotal }}
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                                        Aucun article
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Totaux -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex justify-end">
+                    <div class="w-full max-w-md">
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Sous-total HT:</span>
+                                <span class="text-sm font-medium">{{ invoice.subtotal|number_format(2, ',', ' ') }} €</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">TVA ({{ invoice.company.vatRate }}%):</span>
+                                <span class="text-sm font-medium">{{ invoice.vatAmount|number_format(2, ',', ' ') }} €</span>
+                            </div>
+                            <div class="flex justify-between pt-2 border-t border-gray-200">
+                                <span class="text-base font-semibold text-gray-900">Total TTC:</span>
+                                <span class="text-base font-semibold text-primary-600">{{ invoice.total|number_format(2, ',', ' ') }} €</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conditions et notes -->
+            {% if invoice.paymentTerms or invoice.notes %}
+                <div class="bg-white rounded-lg shadow p-6">
+                    {% if invoice.paymentTerms %}
+                        <div class="mb-6">
+                            <h4 class="text-lg font-medium text-gray-900 mb-3">Conditions de paiement</h4>
+                            <div class="prose max-w-none">
+                                {{ invoice.paymentTerms|nl2br }}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if invoice.notes %}
+                        <div>
+                            <h4 class="text-lg font-medium text-gray-900 mb-3">Notes internes</h4>
+                            <div class="prose max-w-none text-gray-600">
+                                {{ invoice.notes|nl2br }}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <!-- Relances envoyées -->
+            {% if invoice.reminders|length > 0 %}
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Relances envoyées</h3>
+                    <div class="space-y-3">
+                        {% for reminder in invoice.reminders %}
+                            <div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
+                                <div>
+                                    <p class="font-medium text-orange-900">{{ reminder.typeLabel }}</p>
+                                    <p class="text-sm text-orange-700">{{ reminder.subject }}</p>
+                                </div>
+                                <div class="text-right">
+                                    {% if reminder.isSent %}
+                                        <span class="text-xs text-orange-600">Envoyée le {{ reminder.sentAt|date('d/m/Y à H:i') }}</span>
+                                    {% else %}
+                                        <span class="text-xs text-gray-500">En attente</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Informations client -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Client</h3>
+                <div class="space-y-3">
+                    <div>
+                        <p class="font-medium text-gray-900">{{ invoice.customer.displayName }}</p>
+                        <p class="text-sm text-gray-500">{{ invoice.customer.typeLabel }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">{{ invoice.customer.email }}</p>
+                        {% if invoice.customer.phone %}
+                            <p class="text-sm text-gray-600">{{ invoice.customer.phone }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        {{ invoice.customer.fullAddress }}
+                    </div>
+                    {% if invoice.customer.isCompany %}
+                        {% if invoice.customer.siret %}
+                            <p class="text-sm text-gray-600">SIRET: {{ invoice.customer.siret }}</p>
+                        {% endif %}
+                        {% if invoice.customer.vatNumber %}
+                            <p class="text-sm text-gray-600">TVA: {{ invoice.customer.vatNumber }}</p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Actions</h3>
+                <div class="space-y-3">
+                    {% if invoice.canBeSent and is_granted('send', invoice) %}
+                        <form action="{{ path('app_invoices_send', {id: invoice.id}) }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir envoyer cette facture ?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('send' ~ invoice.id) }}">
+                            <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200">
+                                <i class="fas fa-paper-plane mr-2"></i>
+                                Envoyer au client
+                            </button>
+                        </form>
+                    {% endif %}
+                    
+                    {% if invoice.canBePaid and is_granted('manage', invoice) %}
+                        <form action="{{ path('app_invoices_mark_paid', {id: invoice.id}) }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir marquer cette facture comme payée ?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('mark_paid' ~ invoice.id) }}">
+                            <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200">
+                                <i class="fas fa-check mr-2"></i>
+                                Marquer comme payée
+                            </button>
+                        </form>
+                    {% endif %}
+                    
+                    {% if invoice.isOverdue and is_granted('manage', invoice) %}
+                        <form action="{{ path('app_invoices_send_reminder', {id: invoice.id}) }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir envoyer une relance ?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('send_reminder' ~ invoice.id) }}">
+                            <button type="submit" class="w-full bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition duration-200">
+                                <i class="fas fa-bell mr-2"></i>
+                                Envoyer une relance
+                            </button>
+                        </form>
+                    {% endif %}
+                    
+                    {% if invoice.canBeCancelled and is_granted('cancel', invoice) %}
+                        <form action="{{ path('app_invoices_cancel', {id: invoice.id}) }}" method="post" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette facture ?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ invoice.id) }}">
+                            <button type="submit" class="w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-200">
+                                <i class="fas fa-ban mr-2"></i>
+                                Annuler la facture
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Historique -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Historique</h3>
+                <div class="space-y-3">
+                    <div class="flex items-center text-sm">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full mr-3"></div>
+                        <div class="flex-1">
+                            <p class="text-gray-900">Facture créée</p>
+                            <p class="text-gray-500">{{ invoice.createdAt|date('d/m/Y à H:i') }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if invoice.sentAt %}
+                        <div class="flex items-center text-sm">
+                            <div class="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                            <div class="flex-1">
+                                <p class="text-gray-900">Facture envoyée</p>
+                                <p class="text-gray-500">{{ invoice.sentAt|date('d/m/Y à H:i') }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if invoice.paidAt %}
+                        <div class="flex items-center text-sm">
+                            <div class="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
+                            <div class="flex-1">
+                                <p class="text-gray-900">Facture payée</p>
+                                <p class="text-gray-500">{{ invoice.paidAt|date('d/m/Y à H:i') }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% for reminder in invoice.reminders %}
+                        {% if reminder.isSent %}
+                            <div class="flex items-center text-sm">
+                                <div class="w-2 h-2 bg-orange-400 rounded-full mr-3"></div>
+                                <div class="flex-1">
+                                    <p class="text-gray-900">{{ reminder.typeLabel }}</p>
+                                    <p class="text-gray-500">{{ reminder.sentAt|date('d/m/Y à H:i') }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Devis associé -->
+            {% if invoice.quote %}
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Devis associé</h3>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-file-alt text-blue-600 mr-3"></i>
+                            <div>
+                                <p class="font-medium text-blue-900">{{ invoice.quote.number }}</p>
+                                <p class="text-sm text-blue-700">{{ invoice.quote.statusLabel }}</p>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <a href="{{ path('app_quotes_show', {id: invoice.quote.id}) }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                Voir le devis →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Informations système -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Informations système</h3>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Statut</label>
+                        <p class="text-sm">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                {% if invoice.status == 'draft' %}bg-gray-100 text-gray-800{% endif %}
+                                {% if invoice.status == 'sent' %}bg-blue-100 text-blue-800{% endif %}
+                                {% if invoice.status == 'paid' %}bg-green-100 text-green-800{% endif %}
+                                {% if invoice.status == 'overdue' %}bg-red-100 text-red-800{% endif %}
+                                {% if invoice.status == 'cancelled' %}bg-orange-100 text-orange-800{% endif %}
+                            ">
+                                {{ invoice.statusLabel }}
+                            </span>
+                        </p>
+                    </div>
+                    {% if invoice.updatedAt != invoice.createdAt %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Dernière modification</label>
+                            <p class="text-sm text-gray-900">{{ invoice.updatedAt|date('d/m/Y à H:i') }}</p>
+                        </div>
+                    {% endif %}
+                    {% if invoice.status == 'sent' and not invoice.isOverdue %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Jours restants</label>
+                            <p class="text-sm text-gray-900">{{ invoice.daysUntilDue }} jour(s)</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

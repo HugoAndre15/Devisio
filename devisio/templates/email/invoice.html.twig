@@ -1,5 +1,3 @@
-
-{# templates/email/invoice.html.twig #}
 <!DOCTYPE html>
 <html>
 <head>
@@ -15,73 +13,125 @@
             padding: 20px;
         }
         .header {
-            background-color: #10b981;
+            background-color: #2563eb;
             color: white;
             padding: 20px;
             text-align: center;
             border-radius: 8px 8px 0 0;
         }
         .content {
-            background-color: #f8f9fa;
-            padding: 20px;
+            background-color: #f9fafb;
+            padding: 30px;
             border-radius: 0 0 8px 8px;
         }
-        .invoice-info {
+        .invoice-details {
             background-color: white;
-            padding: 15px;
-            border-radius: 5px;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #2563eb;
+        }
+        .amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+            text-align: center;
             margin: 20px 0;
         }
         .footer {
             text-align: center;
-            font-size: 12px;
-            color: #666;
             margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #2563eb;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .status-overdue {
+            background-color: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border-left: 4px solid #dc2626;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>{{ company.name }}</h1>
-        <p>Nouvelle facture disponible</p>
+        <h1>Facture {{ invoice.number }}</h1>
+        <p>{{ company.name }}</p>
     </div>
-
+    
     <div class="content">
         <p>Bonjour {{ customer.firstName }} {{ customer.lastName }},</p>
-
-        <p>Nous avons le plaisir de vous transmettre votre facture pour {{ invoice.subject }}.</p>
-
-        <div class="invoice-info">
-            <strong>Détails de la facture :</strong><br>
-            <strong>Numéro :</strong> {{ invoice.number }}<br>
-            <strong>Date :</strong> {{ invoice.invoiceDate|date('d/m/Y') }}<br>
-            <strong>Échéance :</strong> {{ invoice.dueDate|date('d/m/Y') }}<br>
-            <strong>Montant total :</strong> {{ invoice.formattedTotal }}
+        
+        {% if invoice.status == 'overdue' %}
+            <div class="status-overdue">
+                <strong>⚠️ Rappel de paiement</strong><br>
+                Cette facture était due le {{ invoice.dueDate|date('d/m/Y') }} et demeure impayée.
+                Merci de bien vouloir procéder au règlement dans les plus brefs délais.
+            </div>
+        {% else %}
+            <p>Nous vous prions de trouver ci-joint la facture <strong>{{ invoice.number }}</strong> 
+            d'un montant de <strong>{{ invoice.total|number_format(2, ',', ' ') }} € TTC</strong>.</p>
+        {% endif %}
+        
+        <div class="invoice-details">
+            <h3>Détails de la facture</h3>
+            <p><strong>Numéro :</strong> {{ invoice.number }}</p>
+            <p><strong>Sujet :</strong> {{ invoice.subject }}</p>
+            <p><strong>Date de facture :</strong> {{ invoice.invoiceDate|date('d/m/Y') }}</p>
+            <p><strong>Date d'échéance :</strong> {{ invoice.dueDate|date('d/m/Y') }}</p>
+            
+            {% if invoice.description %}
+                <p><strong>Description :</strong><br>{{ invoice.description|nl2br }}</p>
+            {% endif %}
         </div>
-
-        {% if invoice.description %}
-            <p><strong>Description :</strong><br>
-            {{ invoice.description|nl2br }}</p>
-        {% endif %}
-
+        
+        <div class="amount">
+            Montant à régler : {{ invoice.total|number_format(2, ',', ' ') }} € TTC
+        </div>
+        
         {% if invoice.paymentTerms %}
-            <p><strong>Modalités de paiement :</strong><br>
-            {{ invoice.paymentTerms|nl2br }}</p>
+            <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                <h4>Conditions de paiement :</h4>
+                {{ invoice.paymentTerms|nl2br }}
+            </div>
         {% endif %}
-
-        <p>Vous trouverez la facture complète en pièce jointe de cet email.</p>
-
-        <p>Pour toute question, n'hésitez pas à nous contacter.</p>
-
+        
+        <p>Pour toute question concernant cette facture, n'hésitez pas à nous contacter.</p>
+        
         <p>Cordialement,<br>
-        L'équipe {{ company.name }}</p>
+        <strong>{{ company.name }}</strong></p>
+        
+        {% if company.phone %}
+            <p>Téléphone : {{ company.phone }}</p>
+        {% endif %}
+        {% if company.email %}
+            <p>Email : {{ company.email }}</p>
+        {% endif %}
     </div>
-
+    
     <div class="footer">
-        <p>{{ company.name }}<br>
-        {{ company.address }}, {{ company.postalCode }} {{ company.city }}<br>
-        {% if company.phone %}Tél : {{ company.phone }} - {% endif %}
-        {% if company.email %}Email : {{ company.email }}{% endif %}</p>
+        <p>{{ company.name }}</p>
+        <p>{{ company.address }}, {{ company.postalCode }} {{ company.city }}</p>
+        {% if company.siret %}
+            <p>SIRET : {{ company.siret }}</p>
+        {% endif %}
+        {% if company.vatNumber %}
+            <p>N° TVA : {{ company.vatNumber }}</p>
+        {% endif %}
+        <p><small>Cet email a été envoyé automatiquement depuis Devisio</small></p>
     </div>
 </body>
 </html>
