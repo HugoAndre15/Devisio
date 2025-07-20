@@ -1,0 +1,448 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer une facture depuis le devis {{ quote.number }} - Devisio{% endblock %}
+{% block page_title %}Créer une facture depuis le devis {{ quote.number }}{% endblock %}
+
+{% block header_actions %}
+    <div class="flex space-x-3">
+        <a href="{{ path('app_invoices') }}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour aux factures
+        </a>
+        
+        <a href="{{ path('app_quotes_show', {id: quote.id}) }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200">
+            <i class="fas fa-file-alt mr-2"></i>
+            Voir le devis
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Information sur le devis source -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <i class="fas fa-info-circle text-blue-600"></i>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-blue-800">Création depuis un devis accepté</h3>
+                <div class="text-sm text-blue-700 mt-1">
+                    <p>Cette facture est créée à partir du devis <strong>{{ quote.number }}</strong> accepté le <strong>{{ quote.acceptedAt|date('d/m/Y') }}</strong>.</p>
+                    <p class="mt-1">Les informations du devis ont été automatiquement reprises. Vous pouvez les modifier si nécessaire.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow">
+        {{ form_start(form, {'attr': {'class': 'space-y-6', 'id': 'invoice-form'}}) }}
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-gray-900">Informations générales</h3>
+                    <div class="text-sm text-gray-500">
+                        Devis source: <span class="font-medium text-blue-600">{{ quote.number }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        {{ form_label(form.customer, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.customer, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent', 'readonly': true}}) }}
+                        {{ form_errors(form.customer) }}
+                        <p class="text-xs text-gray-500 mt-1">Client repris du devis (non modifiable)</p>
+                    </div>
+                    
+                    <div>
+                        {{ form_label(form.subject, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.subject, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                        {{ form_errors(form.subject) }}
+                    </div>
+                </div>
+                
+                <div>
+                    {{ form_label(form.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                    {{ form_widget(form.description, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                    {{ form_errors(form.description) }}
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        {{ form_label(form.invoiceDate, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.invoiceDate, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                        {{ form_errors(form.invoiceDate) }}
+                    </div>
+                    
+                    <div>
+                        {{ form_label(form.dueDate, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.dueDate, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                        {{ form_errors(form.dueDate) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-200">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Articles du devis</h3>
+                    <div class="text-sm text-gray-500">
+                        Articles repris automatiquement du devis {{ quote.number }}
+                    </div>
+                </div>
+                
+                <div id="invoice-items" class="space-y-4" data-prototype="{{ form_widget(form.items.vars.prototype)|e('html_attr') }}">
+                    {% for item in form.items %}
+                        <div class="invoice-item bg-gray-50 p-4 rounded-lg border">
+                            <div class="flex justify-between items-start mb-4">
+                                <h4 class="font-medium text-gray-900">Article {{ loop.index }}</h4>
+                                {% if form.items|length > 1 %}
+                                    <button type="button" class="remove-item text-red-600 hover:text-red-800">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    {{ form_label(item.product, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                    {{ form_widget(item.product, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent product-select'}}) }}
+                                    {{ form_errors(item.product) }}
+                                </div>
+                                
+                                <div>
+                                    {{ form_label(item.productName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                    {{ form_widget(item.productName, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                    {{ form_errors(item.productName) }}
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                {{ form_label(item.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(item.description, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                {{ form_errors(item.description) }}
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+                                <div>
+                                    {{ form_label(item.unitPrice, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                    {{ form_widget(item.unitPrice, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent price-input'}}) }}
+                                    {{ form_errors(item.unitPrice) }}
+                                </div>
+                                
+                                <div>
+                                    {{ form_label(item.quantity, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                    {{ form_widget(item.quantity, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent quantity-input'}}) }}
+                                    {{ form_errors(item.quantity) }}
+                                </div>
+                                
+                                <div>
+                                    {{ form_label(item.unit, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                    {{ form_widget(item.unit, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                    {{ form_errors(item.unit) }}
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Total</label>
+                                    <div class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 item-total">
+                                        {{ item.vars.data.formattedTotal|default('0,00 €') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-4">
+                    <button type="button" id="add-item" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200">
+                        <i class="fas fa-plus mr-2"></i>
+                        Ajouter un article supplémentaire
+                    </button>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-200">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        {{ form_label(form.paymentTerms, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.paymentTerms, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent', 'placeholder': 'Ex: Paiement sous 30 jours'}}) }}
+                        {{ form_errors(form.paymentTerms) }}
+                    </div>
+                    
+                    <div>
+                        {{ form_label(form.notes, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.notes, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent', 'placeholder': 'Notes internes'}}) }}
+                        {{ form_errors(form.notes) }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Totaux -->
+            <div class="px-6 py-4 border-t border-gray-200">
+                <div class="flex justify-end">
+                    <div class="w-full max-w-md">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm text-gray-600">Sous-total HT:</span>
+                                <span class="text-sm font-medium" id="subtotal">{{ quote.subtotal|number_format(2, ',', ' ') }} €</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm text-gray-600">TVA ({{ quote.company.vatRate }}%):</span>
+                                <span class="text-sm font-medium" id="vat-amount">{{ quote.vatAmount|number_format(2, ',', ' ') }} €</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-2 border-t border-gray-200">
+                                <span class="text-base font-semibold text-gray-900">Total TTC:</span>
+                                <span class="text-base font-semibold text-primary-600" id="total">{{ quote.total|number_format(2, ',', ' ') }} €</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations du devis source -->
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <h4 class="text-sm font-medium text-gray-900 mb-3">Informations du devis source</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                    <div>
+                        <span class="font-medium">Devis:</span>
+                        {{ quote.number }}
+                    </div>
+                    <div>
+                        <span class="font-medium">Date acceptation:</span>
+                        {{ quote.acceptedAt|date('d/m/Y à H:i') }}
+                    </div>
+                    <div>
+                        <span class="font-medium">Créé par:</span>
+                        {{ quote.createdBy.fullName }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-200 flex justify-between">
+                <a href="{{ path('app_invoices') }}" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition duration-200">
+                    <i class="fas fa-times mr-2"></i>
+                    Annuler
+                </a>
+                
+                <div class="space-x-3">
+                    <button type="submit" name="action" value="save" class="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition duration-200">
+                        <i class="fas fa-save mr-2"></i>
+                        Créer la facture
+                    </button>
+                    <button type="submit" name="action" value="save_and_send" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Créer et envoyer
+                    </button>
+                </div>
+            </div>
+        {{ form_end(form) }}
+    </div>
+
+    <!-- Aide et conseils -->
+    <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <i class="fas fa-lightbulb text-blue-600"></i>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-blue-800">À propos de la facturation depuis un devis</h3>
+                <div class="text-sm text-blue-700 mt-1">
+                    <ul class="list-disc list-inside space-y-1">
+                        <li><strong>Lien automatique :</strong> Cette facture sera automatiquement liée au devis {{ quote.number }}.</li>
+                        <li><strong>Données reprises :</strong> Toutes les informations du devis sont reprises, mais vous pouvez les modifier.</li>
+                        <li><strong>Numérotation :</strong> Un nouveau numéro de facture sera généré automatiquement.</li>
+                        <li><strong>Dates :</strong> Les dates de facture et d'échéance sont définies selon vos paramètres par défaut.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('invoice-form');
+            const itemsContainer = document.getElementById('invoice-items');
+            const addItemBtn = document.getElementById('add-item');
+            let itemIndex = {{ form.items|length }};
+            const vatRate = {{ quote.company.vatRate|default(20) }} / 100;
+
+            // Add item functionality
+            addItemBtn.addEventListener('click', function() {
+                const prototype = itemsContainer.dataset.prototype;
+                const newItem = prototype.replace(/__name__/g, itemIndex);
+                
+                const div = document.createElement('div');
+                div.className = 'invoice-item bg-gray-50 p-4 rounded-lg border';
+                div.innerHTML = newItem;
+                
+                itemsContainer.appendChild(div);
+                itemIndex++;
+                
+                // Add remove functionality to new item
+                const removeBtn = div.querySelector('.remove-item');
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', function() {
+                        div.remove();
+                        calculateTotals();
+                    });
+                }
+                
+                // Add calculation listeners to new item
+                addCalculationListeners(div);
+                calculateTotals();
+            });
+
+            // Remove item functionality for existing items
+            document.querySelectorAll('.remove-item').forEach(button => {
+                button.addEventListener('click', function() {
+                    if (itemsContainer.children.length > 1) {
+                        button.closest('.invoice-item').remove();
+                        calculateTotals();
+                    }
+                });
+            });
+
+            // Product selection functionality
+            document.querySelectorAll('.product-select').forEach(select => {
+                select.addEventListener('change', function() {
+                    if (this.value) {
+                        // Get product data via AJAX
+                        fetch(`/quotes/api/products/${this.value}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                const item = this.closest('.invoice-item');
+                                item.querySelector('input[name*="[productName]"]').value = data.name;
+                                item.querySelector('textarea[name*="[description]"]').value = data.description || '';
+                                item.querySelector('input[name*="[unitPrice]"]').value = data.price;
+                                item.querySelector('input[name*="[unit]"]').value = data.unit;
+                                calculateItemTotal(item);
+                            })
+                            .catch(error => {
+                                console.error('Erreur lors du chargement du produit:', error);
+                            });
+                    }
+                });
+            });
+
+            // Add calculation listeners to existing items
+            document.querySelectorAll('.invoice-item').forEach(item => {
+                addCalculationListeners(item);
+            });
+
+            function addCalculationListeners(item) {
+                const priceInput = item.querySelector('.price-input');
+                const quantityInput = item.querySelector('.quantity-input');
+                
+                [priceInput, quantityInput].forEach(input => {
+                    if (input) {
+                        input.addEventListener('input', function() {
+                            calculateItemTotal(item);
+                        });
+                    }
+                });
+            }
+
+            function calculateItemTotal(item) {
+                const priceInput = item.querySelector('.price-input');
+                const quantityInput = item.querySelector('.quantity-input');
+                const totalDiv = item.querySelector('.item-total');
+                
+                if (priceInput && quantityInput && totalDiv) {
+                    const price = parseFloat(priceInput.value) || 0;
+                    const quantity = parseFloat(quantityInput.value) || 0;
+                    const total = price * quantity;
+                    
+                    totalDiv.textContent = total.toLocaleString('fr-FR', {
+                        style: 'currency',
+                        currency: 'EUR'
+                    });
+                }
+                
+                calculateTotals();
+            }
+
+            function calculateTotals() {
+                let subtotal = 0;
+                
+                document.querySelectorAll('.invoice-item').forEach(item => {
+                    const priceInput = item.querySelector('.price-input');
+                    const quantityInput = item.querySelector('.quantity-input');
+                    
+                    if (priceInput && quantityInput) {
+                        const price = parseFloat(priceInput.value) || 0;
+                        const quantity = parseFloat(quantityInput.value) || 0;
+                        subtotal += price * quantity;
+                    }
+                });
+                
+                const vatAmount = subtotal * vatRate;
+                const total = subtotal + vatAmount;
+                
+                // Update totals display
+                const subtotalEl = document.getElementById('subtotal');
+                const vatEl = document.getElementById('vat-amount');
+                const totalEl = document.getElementById('total');
+                
+                if (subtotalEl) {
+                    subtotalEl.textContent = subtotal.toLocaleString('fr-FR', {
+                        style: 'currency',
+                        currency: 'EUR'
+                    });
+                }
+                
+                if (vatEl) {
+                    vatEl.textContent = vatAmount.toLocaleString('fr-FR', {
+                        style: 'currency',
+                        currency: 'EUR'
+                    });
+                }
+                
+                if (totalEl) {
+                    totalEl.textContent = total.toLocaleString('fr-FR', {
+                        style: 'currency',
+                        currency: 'EUR'
+                    });
+                }
+            }
+
+            // Initial calculation
+            calculateTotals();
+
+            // Auto-adjust due date when invoice date changes
+            const invoiceDateInput = document.querySelector('input[name="invoice[invoiceDate]"]');
+            const dueDateInput = document.querySelector('input[name="invoice[dueDate]"]');
+            
+            if (invoiceDateInput && dueDateInput) {
+                invoiceDateInput.addEventListener('change', function() {
+                    const invoiceDate = new Date(this.value);
+                    if (invoiceDate) {
+                        const dueDate = new Date(invoiceDate);
+                        dueDate.setDate(dueDate.getDate() + 30); // 30 jours par défaut
+                        dueDateInput.value = dueDate.toISOString().split('T')[0];
+                    }
+                });
+            }
+
+            // Validation before submission
+            form.addEventListener('submit', function(e) {
+                const items = document.querySelectorAll('.invoice-item');
+                let hasValidItems = false;
+                
+                items.forEach(item => {
+                    const productName = item.querySelector('input[name*="[productName]"]');
+                    if (productName && productName.value.trim()) {
+                        hasValidItems = true;
+                    }
+                });
+                
+                if (!hasValidItems) {
+                    e.preventDefault();
+                    alert('La facture doit contenir au moins un article avec un nom de produit.');
+                    return false;
+                }
+            });
+        });
+    </script>
+{% endblock %}
