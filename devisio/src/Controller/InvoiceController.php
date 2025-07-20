@@ -5,8 +5,10 @@ namespace App\Controller;
 use App\Entity\Invoice;
 use App\Entity\InvoiceItem;
 use App\Entity\InvoiceReminder;
+use App\Entity\Quote;
 use App\Form\InvoiceType;
 use App\Repository\InvoiceRepository;
+use App\Repository\QuoteRepository;
 use App\Service\PdfGeneratorService;
 use App\Service\EmailService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,7 +25,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class InvoiceController extends AbstractController
 {
     #[Route('/', name: 'app_invoices', methods: ['GET'])]
-    public function index(Request $request, InvoiceRepository $invoiceRepository, PaginatorInterface $paginator): Response
+    public function index(Request $request, InvoiceRepository $invoiceRepository, QuoteRepository $quoteRepository, PaginatorInterface $paginator): Response
     {
         $company = $this->getUser()->getCompany();
         
@@ -65,73 +67,57 @@ class InvoiceController extends AbstractController
             'outstanding' => $invoiceRepository->getOutstandingAmountByCompany($company),
         ];
 
+        // Récupérer les devis acceptés qui peuvent être facturés
+        $acceptedQuotes = $quoteRepository->findAcceptedQuotesWithoutInvoice($company);
+
         return $this->render('invoice/index.html.twig', [
             'invoices' => $invoices,
             'stats' => $stats,
             'current_status' => $status,
             'current_search' => $search,
+            'accepted_quotes' => $acceptedQuotes,
         ]);
     }
 
-    #[Route('/new', name: 'app_invoices_new', methods: ['GET', 'POST'])]
+    #[Route('/create-from-quote/{id}', name: 'app_invoices_create_from_quote', methods: ['POST'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_EMPLOYE')]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function createFromQuote(Request $request, Quote $quote, EntityManagerInterface $entityManager): Response
     {
-        $invoice = new Invoice();
-        $invoice->setCompany($this->getUser()->getCompany());
-        $invoice->setCreatedBy($this->getUser());
-        
-        // Add an empty item to start
-        $invoice->addItem(new InvoiceItem());
-
-        $form = $this->createForm(InvoiceType::class, $invoice);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Remove empty items
-            foreach ($invoice->getItems() as $item) {
-                if (!$item->getProductName()) {
-                    $invoice->removeItem($item);
-                }
-            }
-
-            if ($invoice->getItems()->isEmpty()) {
-                $this->addFlash('error', 'La facture doit contenir au moins un article.');
-                return $this->render('invoice/new.html.twig', [
-                    'invoice' => $invoice,
-                    'form' => $form,
-                ]);
-            }
-
-            $invoice->calculateTotals();
-            
-            $entityManager->persist($invoice);
-            $entityManager->flush();
-
-            // Check if user wants to send immediately
-            $action = $request->request->get('action');
-            if ($action === 'save_and_send' && $invoice->canBeSent()) {
-                try {
-                    $emailService = $this->container->get(EmailService::class);
-                    $emailService->sendInvoiceToCustomer($invoice);
-                    $invoice->markAsSent();
-                    $entityManager->flush();
-                    
-                    $this->addFlash('success', 'La facture a été créée et envoyée avec succès.');
-                } catch (\Exception $e) {
-                    $this->addFlash('warning', 'La facture a été créée mais l\'envoi a échoué: ' . $e->getMessage());
-                }
-            } else {
-                $this->addFlash('success', 'La facture a été créée avec succès.');
-            }
-
-            return $this->redirectToRoute('app_invoices_show', ['id' => $invoice->getId()]);
+        // Vérifier que le devis peut être converti
+        if (!$quote->canBeConvertedToInvoice()) {
+            $this->addFlash('error', 'Ce devis ne peut pas être converti en facture.');
+            return $this->redirectToRoute('app_invoices');
         }
 
-        return $this->render('invoice/new.html.twig', [
-            'invoice' => $invoice,
-            'form' => $form,
-        ]);
+        // Vérifier les permissions
+        $this->denyAccessUnlessGranted('convert', $quote);
+
+        // Vérifier le token CSRF
+        if (!$this->isCsrfTokenValid('create_invoice_from_quote_' . $quote->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_invoices');
+        }
+
+        // Créer la facture à partir du devis automatiquement
+        $invoice = new Invoice();
+        $invoice->createFromQuote($quote);
+        $invoice->setCreatedBy($this->getUser());
+
+        // Pas de modification possible - création directe
+        $entityManager->persist($invoice);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'La facture ' . $invoice->getNumber() . ' a été créée avec succès depuis le devis ' . $quote->getNumber() . '.');
+
+        return $this->redirectToRoute('app_invoices_show', ['id' => $invoice->getId()]);
+    }
+
+    // Supprimer ou désactiver la méthode new() originale
+    #[Route('/new', name: 'app_invoices_new', methods: ['GET'])]
+    public function newRedirect(): Response
+    {
+        $this->addFlash('info', 'Pour créer une facture, vous devez d\'abord avoir un devis accepté. Sélectionnez un devis accepté ci-dessous.');
+        return $this->redirectToRoute('app_invoices');
     }
 
     #[Route('/{id}', name: 'app_invoices_show', methods: ['GET'], requirements: ['id' => '\d+'])]
@@ -149,6 +135,12 @@ class InvoiceController extends AbstractController
     public function edit(Request $request, Invoice $invoice, EntityManagerInterface $entityManager): Response
     {
         $this->denyAccessUnlessGranted('edit', $invoice);
+
+        // Les factures créées depuis un devis ne peuvent pas être modifiées
+        if ($invoice->getQuote()) {
+            $this->addFlash('error', 'Cette facture a été créée depuis un devis et ne peut pas être modifiée. Les modifications doivent être faites sur le devis source.');
+            return $this->redirectToRoute('app_invoices_show', ['id' => $invoice->getId()]);
+        }
 
         if (!$invoice->canBeModified()) {
             $this->addFlash('error', 'Cette facture ne peut plus être modifiée car elle a été envoyée.');
@@ -189,6 +181,7 @@ class InvoiceController extends AbstractController
         ]);
     }
 
+    // ... (le reste des méthodes reste inchangé)
     #[Route('/{id}/delete', name: 'app_invoices_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     #[IsGranted('ROLE_ADMIN')]
     public function delete(Request $request, Invoice $invoice, EntityManagerInterface $entityManager): Response

@@ -111,4 +111,36 @@ class QuoteRepository extends ServiceEntityRepository
 
         return $result->fetchAllAssociative();
     }
+
+    public function findAcceptedQuotesWithoutInvoice(Company $company): array
+    {
+        // Récupérer tous les IDs des devis qui ont déjà une facture
+        $quotesWithInvoiceIds = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('IDENTITY(i.quote)')
+            ->from('App\Entity\Invoice', 'i')
+            ->where('i.quote IS NOT NULL')
+            ->andWhere('i.company = :company')
+            ->setParameter('company', $company)
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        // Récupérer les devis acceptés qui ne sont PAS dans cette liste
+        $queryBuilder = $this->createQueryBuilder('q')
+            ->andWhere('q.company = :company')
+            ->andWhere('q.status = :status')
+            ->leftJoin('q.customer', 'c')
+            ->addSelect('c')
+            ->setParameter('company', $company)
+            ->setParameter('status', Quote::STATUS_ACCEPTED)
+            ->orderBy('q.acceptedAt', 'DESC');
+
+        // Exclure les devis qui ont déjà une facture
+        if (!empty($quotesWithInvoiceIds)) {
+            $queryBuilder->andWhere('q.id NOT IN (:excludedIds)')
+                        ->setParameter('excludedIds', $quotesWithInvoiceIds);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
 }

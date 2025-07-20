@@ -359,32 +359,15 @@ class QuoteController extends AbstractController
         }
 
         if ($this->isCsrfTokenValid('convert'.$quote->getId(), $request->request->get('_token'))) {
+            // Créer directement la facture sans formulaire de modification
             $invoice = new Invoice();
-            $invoice->setCompany($quote->getCompany());
-            $invoice->setCustomer($quote->getCustomer());
+            $invoice->createFromQuote($quote);
             $invoice->setCreatedBy($this->getUser());
-            $invoice->setQuote($quote);
-            $invoice->setSubject($quote->getSubject());
-            $invoice->setDescription($quote->getDescription());
-            
-            // Copy items from quote to invoice
-            foreach ($quote->getItems() as $quoteItem) {
-                $invoiceItem = new InvoiceItem();
-                $invoiceItem->setProductName($quoteItem->getProductName());
-                $invoiceItem->setDescription($quoteItem->getDescription());
-                $invoiceItem->setUnitPrice($quoteItem->getUnitPrice());
-                $invoiceItem->setQuantity($quoteItem->getQuantity());
-                $invoiceItem->setUnit($quoteItem->getUnit());
-                $invoiceItem->setProduct($quoteItem->getProduct());
-                $invoice->addItem($invoiceItem);
-            }
-            
-            $invoice->calculateTotals();
             
             $entityManager->persist($invoice);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Le devis a été converti en facture avec succès.');
+            $this->addFlash('success', 'La facture ' . $invoice->getNumber() . ' a été créée avec succès depuis le devis.');
             return $this->redirectToRoute('app_invoices_show', ['id' => $invoice->getId()]);
         }
 
