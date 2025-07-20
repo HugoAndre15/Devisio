@@ -1,0 +1,357 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier {{ product.name }} - Produits - Devisio{% endblock %}
+{% block page_title %}Modifier {{ product.name }}{% endblock %}
+
+{% block header_actions %}
+    <div class="flex space-x-3">
+        <a href="{{ path('app_products_show', {id: product.id}) }}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour au produit
+        </a>
+        
+        <a href="{{ path('app_products') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200">
+            <i class="fas fa-list mr-2"></i>
+            Liste des produits
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="max-w-4xl mx-auto">
+        <!-- Alerte si produit inactif -->
+        {% if not product.isActive %}
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                    <div>
+                        <h3 class="text-sm font-medium text-red-800">Produit inactif</h3>
+                        <p class="text-sm text-red-700">Ce produit est actuellement désactivé et n'apparaît pas dans les listes de sélection.</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="bg-white rounded-lg shadow">
+            {{ form_start(form, {'attr': {'class': 'space-y-6', 'id': 'product-form'}}) }}
+                
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Modifier les informations du produit</h3>
+                            <p class="text-sm text-gray-600 mt-1">Produit créé le {{ product.createdAt|date('d/m/Y à H:i') }}</p>
+                        </div>
+                        <div>
+                            {% if product.isActive %}
+                                <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Actif
+                                </span>
+                            {% else %}
+                                <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-red-100 text-red-800">
+                                    <i class="fas fa-times-circle mr-1"></i>
+                                    Inactif
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Informations de base -->
+                <div class="px-6 py-4">
+                    <h4 class="text-md font-medium text-gray-900 mb-4">
+                        <i class="fas fa-info-circle mr-2 text-primary-600"></i>
+                        Informations générales
+                    </h4>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            {{ form_label(form.name, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.name, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.name) }}
+                            {% if product.quoteItems|length > 0 or product.invoiceItems|length > 0 %}
+                                <p class="text-xs text-amber-600 mt-1">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                    Attention : Ce produit est utilisé dans des devis ou factures. Modifier le nom peut affecter l'affichage.
+                                </p>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            {{ form_label(form.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.description, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.description) }}
+                        </div>
+                        
+                        <div>
+                            {{ form_label(form.type, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.type, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.type) }}
+                            {% if product.quoteItems|length > 0 or product.invoiceItems|length > 0 %}
+                                <p class="text-xs text-amber-600 mt-1">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                    Attention : Ce produit est utilisé dans des documents. Modifier le type peut affecter la catégorisation.
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations tarifaires -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <h4 class="text-md font-medium text-gray-900 mb-4">
+                        <i class="fas fa-euro-sign mr-2 text-green-600"></i>
+                        Tarification
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            {{ form_label(form.price, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            <div class="relative">
+                                {{ form_widget(form.price, {'attr': {'class': 'w-full px-3 py-2 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">€</span>
+                                </div>
+                            </div>
+                            {{ form_errors(form.price) }}
+                            {% if product.quoteItems|length > 0 or product.invoiceItems|length > 0 %}
+                                <p class="text-xs text-amber-600 mt-1">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Ce prix est utilisé dans {{ product.quoteItems|length + product.invoiceItems|length }} document(s).
+                                </p>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            {{ form_label(form.unit, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.unit, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.unit) }}
+                        </div>
+                    </div>
+                    
+                    <!-- Historique des prix si utilisé -->
+                    {% if product.quoteItems|length > 0 or product.invoiceItems|length > 0 %}
+                        <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                            <div class="flex items-start">
+                                <i class="fas fa-chart-line text-blue-600 mt-1 mr-2"></i>
+                                <div class="text-sm text-blue-800">
+                                    <strong>Utilisation actuelle :</strong><br>
+                                    - Utilisé dans {{ product.quoteItems|length }} devis<br>
+                                    - Utilisé dans {{ product.invoiceItems|length }} factures<br>
+                                    <span class="text-xs text-blue-600">Les modifications n'affecteront pas les documents existants.</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Options -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <h4 class="text-md font-medium text-gray-900 mb-4">
+                        <i class="fas fa-cog mr-2 text-gray-600"></i>
+                        Options
+                    </h4>
+                    
+                    <div class="flex items-start">
+                        {{ form_widget(form.isActive, {'attr': {'class': 'h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded mt-1'}}) }}
+                        <div class="ml-2">
+                            {{ form_label(form.isActive, null, {'label_attr': {'class': 'text-sm text-gray-900'}}) }}
+                            {{ form_errors(form.isActive) }}
+                            <div class="mt-1">
+                                {% if not product.isActive %}
+                                    <p class="text-xs text-red-600">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                                        Produit actuellement inactif
+                                    </p>
+                                {% else %}
+                                    <p class="text-xs text-green-600">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        Produit actif
+                                    </p>
+                                {% endif %}
+                                <p class="text-xs text-gray-500 mt-1">{{ form.isActive.vars.help }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations sur l'utilisation -->
+                {% if product.quoteItems|length > 0 or product.invoiceItems|length > 0 %}
+                    <div class="px-6 py-4 border-t border-gray-200 bg-blue-50">
+                        <h4 class="text-md font-medium text-gray-900 mb-3">
+                            <i class="fas fa-history mr-2 text-blue-600"></i>
+                            Utilisation de ce produit
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-alt text-blue-600 mr-2"></i>
+                                <span class="text-gray-700">{{ product.quoteItems|length }} devis créé{{ product.quoteItems|length > 1 ? 's' : '' }}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-receipt text-green-600 mr-2"></i>
+                                <span class="text-gray-700">{{ product.invoiceItems|length }} facture{{ product.invoiceItems|length > 1 ? 's' : '' }} émise{{ product.invoiceItems|length > 1 ? 's' : '' }}</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-blue-700 mt-2">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Les modifications n'affecteront pas les documents déjà créés.
+                        </p>
+                    </div>
+                {% endif %}
+
+                <!-- Boutons d'action -->
+                <div class="px-6 py-4 border-t border-gray-200 flex justify-between">
+                    <a href="{{ path('app_products_show', {id: product.id}) }}" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <i class="fas fa-times mr-2"></i>
+                        Annuler
+                    </a>
+                    
+                    <div class="space-x-3">
+                        <button type="submit" class="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition duration-200">
+                            <i class="fas fa-save mr-2"></i>
+                            Enregistrer les modifications
+                        </button>
+                    </div>
+                </div>
+            {{ form_end(form) }}
+        </div>
+
+        <!-- Informations supplémentaires -->
+        <div class="mt-8 bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Informations système</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Date de création</label>
+                    <p class="text-sm text-gray-900">{{ product.createdAt|date('d/m/Y à H:i') }}</p>
+                </div>
+                {% if product.updatedAt != product.createdAt %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Dernière modification</label>
+                        <p class="text-sm text-gray-900">{{ product.updatedAt|date('d/m/Y à H:i') }}</p>
+                    </div>
+                {% endif %}
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Actions rapides</label>
+                    <div class="flex space-x-2">
+                        <a href="{{ path('app_quotes_new') }}?product={{ product.id }}" 
+                           class="text-blue-600 hover:text-blue-800 text-sm">
+                            <i class="fas fa-file-alt mr-1"></i>
+                            Nouveau devis
+                        </a>
+                        <a href="{{ path('app_products_show', {id: product.id}) }}" 
+                           class="text-green-600 hover:text-green-800 text-sm">
+                            <i class="fas fa-eye mr-1"></i>
+                            Voir détails
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('product-form');
+            const nameInput = document.querySelector('input[name="product[name]"]');
+            const priceInput = document.querySelector('input[name="product[price]"]');
+            const typeSelect = document.querySelector('select[name="product[type]"]');
+
+            // Store original values
+            const originalName = nameInput.value;
+            const originalPrice = priceInput.value;
+            const originalType = typeSelect.value;
+
+            // Warning for products used in documents
+            const hasUsage = {{ (product.quoteItems|length + product.invoiceItems|length) > 0 ? 'true' : 'false' }};
+
+            function showUsageWarning(fieldName, newValue, oldValue) {
+                if (hasUsage && newValue !== oldValue) {
+                    return confirm(`Attention : Ce produit est utilisé dans des documents existants. Changer ${fieldName} n'affectera pas les documents déjà créés. Continuer ?`);
+                }
+                return true;
+            }
+
+            // Validation avant soumission
+            form.addEventListener('submit', function(e) {
+                const name = nameInput.value.trim();
+                const price = parseFloat(priceInput.value);
+                
+                if (!name) {
+                    e.preventDefault();
+                    alert('Veuillez saisir un nom pour le produit.');
+                    nameInput.focus();
+                    return false;
+                }
+                
+                if (isNaN(price) || price < 0) {
+                    e.preventDefault();
+                    alert('Veuillez saisir un prix valide.');
+                    priceInput.focus();
+                    return false;
+                }
+
+                // Check for significant changes
+                if (hasUsage) {
+                    let changes = [];
+                    if (nameInput.value !== originalName) changes.push('le nom');
+                    if (priceInput.value !== originalPrice) changes.push('le prix');
+                    if (typeSelect.value !== originalType) changes.push('le type');
+                    
+                    if (changes.length > 0) {
+                        const changeText = changes.join(', ');
+                        if (!confirm(`Vous avez modifié ${changeText} d'un produit utilisé dans {{ product.quoteItems|length + product.invoiceItems|length }} document(s). Ces modifications n'affecteront pas les documents existants. Continuer ?`)) {
+                            e.preventDefault();
+                            return false;
+                        }
+                    }
+                }
+            });
+
+            // Auto-format price
+            priceInput.addEventListener('blur', function() {
+                const value = parseFloat(this.value);
+                if (!isNaN(value)) {
+                    this.value = value.toFixed(2);
+                }
+            });
+
+            // Warning for price changes
+            priceInput.addEventListener('change', function() {
+                if (hasUsage && this.value !== originalPrice) {
+                    const usageCount = {{ product.quoteItems|length + product.invoiceItems|length }};
+                    if (!confirm(`Ce produit est utilisé dans ${usageCount} document(s). Changer le prix n'affectera pas les documents existants. Continuer ?`)) {
+                        this.value = originalPrice;
+                    }
+                }
+            });
+
+            // Warning for name changes
+            nameInput.addEventListener('change', function() {
+                if (hasUsage && this.value !== originalName) {
+                    if (!showUsageWarning('le nom', this.value, originalName)) {
+                        this.value = originalName;
+                    }
+                }
+            });
+
+            // Warning for type changes
+            typeSelect.addEventListener('change', function() {
+                if (hasUsage && this.value !== originalType) {
+                    if (!showUsageWarning('le type', this.value, originalType)) {
+                        this.value = originalType;
+                    }
+                }
+            });
+
+            // Capitalize first letter of name
+            nameInput.addEventListener('blur', function() {
+                if (this.value) {
+                    this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1);
+                }
+            });
+        });
+    </script>
+{% endblock %}

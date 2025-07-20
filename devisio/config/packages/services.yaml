@@ -22,3 +22,7 @@ services:
     App\Security\Voter\CustomerVoter:
         tags:
             - { name: security.voter }
+
+    App\Security\Voter\ProductVoter:
+        tags:
+            - { name: security.voter }

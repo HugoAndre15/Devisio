@@ -1,0 +1,307 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau produit - Devisio{% endblock %}
+{% block page_title %}Nouveau produit{% endblock %}
+
+{% block header_actions %}
+    <a href="{{ path('app_products') }}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Retour aux produits
+    </a>
+{% endblock %}
+
+{% block body %}
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow">
+            {{ form_start(form, {'attr': {'class': 'space-y-6', 'id': 'product-form'}}) }}
+                
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Informations du produit/service</h3>
+                    <p class="text-sm text-gray-600 mt-1">Créez un produit ou service pour l'utiliser dans vos devis et factures.</p>
+                </div>
+                
+                <!-- Informations de base -->
+                <div class="px-6 py-4">
+                    <h4 class="text-md font-medium text-gray-900 mb-4">
+                        <i class="fas fa-info-circle mr-2 text-primary-600"></i>
+                        Informations générales
+                    </h4>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            {{ form_label(form.name, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.name, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.name) }}
+                        </div>
+                        
+                        <div>
+                            {{ form_label(form.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.description, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.description) }}
+                            <p class="text-xs text-gray-500 mt-1">Cette description apparaîtra sur vos devis et factures.</p>
+                        </div>
+                        
+                        <div>
+                            {{ form_label(form.type, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.type, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.type) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations tarifaires -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <h4 class="text-md font-medium text-gray-900 mb-4">
+                        <i class="fas fa-euro-sign mr-2 text-green-600"></i>
+                        Tarification
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            {{ form_label(form.price, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            <div class="relative">
+                                {{ form_widget(form.price, {'attr': {'class': 'w-full px-3 py-2 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">€</span>
+                                </div>
+                            </div>
+                            {{ form_errors(form.price) }}
+                        </div>
+                        
+                        <div>
+                            {{ form_label(form.unit, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.unit, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.unit) }}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                        <div class="flex items-start">
+                            <i class="fas fa-lightbulb text-blue-600 mt-1 mr-2"></i>
+                            <div class="text-sm text-blue-800">
+                                <strong>Exemple de tarification :</strong><br>
+                                - Vol Paris-Londres : 250€ / vol<br>
+                                - Hôtel 4* : 120€ / nuit<br>
+                                - Guide touristique : 35€ / heure<br>
+                                - Assurance voyage : 15€ / personne
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Options -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <h4 class="text-md font-medium text-gray-900 mb-4">
+                        <i class="fas fa-cog mr-2 text-gray-600"></i>
+                        Options
+                    </h4>
+                    
+                    <div class="flex items-start">
+                        {{ form_widget(form.isActive, {'attr': {'class': 'h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded mt-1'}}) }}
+                        <div class="ml-2">
+                            {{ form_label(form.isActive, null, {'label_attr': {'class': 'text-sm text-gray-900'}}) }}
+                            {{ form_errors(form.isActive) }}
+                            <p class="text-xs text-gray-500 mt-1">{{ form.isActive.vars.help }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="px-6 py-4 border-t border-gray-200 flex justify-between">
+                    <a href="{{ path('app_products') }}" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <i class="fas fa-times mr-2"></i>
+                        Annuler
+                    </a>
+                    
+                    <div class="space-x-3">
+                        <button type="submit" name="submit_action" value="save" class="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition duration-200">
+                            <i class="fas fa-save mr-2"></i>
+                            Enregistrer
+                        </button>
+                        <button type="submit" name="submit_action" value="save_and_new" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200">
+                            <i class="fas fa-plus mr-2"></i>
+                            Enregistrer et nouveau
+                        </button>
+                    </div>
+                </div>
+            {{ form_end(form) }}
+        </div>
+
+        <!-- Exemples de produits par catégorie -->
+        <div class="mt-8 bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Exemples de produits par catégorie</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="space-y-3">
+                    <h4 class="font-medium text-gray-900 flex items-center">
+                        <i class="fas fa-bed text-purple-600 mr-2"></i>
+                        Hébergements
+                    </h4>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Hôtel 3*, 4*, 5*</li>
+                        <li>• Chambre d'hôtes</li>
+                        <li>• Auberge de jeunesse</li>
+                        <li>• Appartement</li>
+                        <li>• Camping</li>
+                    </ul>
+                </div>
+                
+                <div class="space-y-3">
+                    <h4 class="font-medium text-gray-900 flex items-center">
+                        <i class="fas fa-plane text-blue-600 mr-2"></i>
+                        Transports
+                    </h4>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Vol aller-retour</li>
+                        <li>• Train</li>
+                        <li>• Bus/Car</li>
+                        <li>• Location de voiture</li>
+                        <li>• Transfert aéroport</li>
+                    </ul>
+                </div>
+                
+                <div class="space-y-3">
+                    <h4 class="font-medium text-gray-900 flex items-center">
+                        <i class="fas fa-map-marked-alt text-green-600 mr-2"></i>
+                        Activités
+                    </h4>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Visite guidée</li>
+                        <li>• Excursion</li>
+                        <li>• Spectacle</li>
+                        <li>• Musée</li>
+                        <li>• Sport/Loisir</li>
+                    </ul>
+                </div>
+                
+                <div class="space-y-3">
+                    <h4 class="font-medium text-gray-900 flex items-center">
+                        <i class="fas fa-utensils text-orange-600 mr-2"></i>
+                        Restauration
+                    </h4>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• Petit-déjeuner</li>
+                        <li>• Déjeuner</li>
+                        <li>• Dîner</li>
+                        <li>• Demi-pension</li>
+                        <li>• Pension complète</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('product-form');
+            const typeSelect = document.querySelector('select[name="product[type]"]');
+            const nameInput = document.querySelector('input[name="product[name]"]');
+            const priceInput = document.querySelector('input[name="product[price]"]');
+
+            // Suggestions automatiques basées sur le type sélectionné
+            const suggestions = {
+                'accommodation': {
+                    names: ['Hôtel 3*', 'Hôtel 4*', 'Hôtel 5*', 'Chambre d\'hôtes', 'Auberge de jeunesse'],
+                    units: ['nuit', 'séjour']
+                },
+                'transport': {
+                    names: ['Vol aller-retour', 'Train', 'Bus', 'Location voiture', 'Transfert aéroport'],
+                    units: ['vol', 'trajet', 'jour']
+                },
+                'activity': {
+                    names: ['Visite guidée', 'Excursion', 'Spectacle', 'Musée', 'Circuit'],
+                    units: ['personne', 'groupe', 'heure']
+                },
+                'package': {
+                    names: ['Séjour tout compris', 'Week-end découverte', 'Circuit organisé', 'Forfait famille'],
+                    units: ['forfait', 'personne', 'groupe']
+                },
+                'insurance': {
+                    names: ['Assurance voyage', 'Assurance annulation', 'Assurance rapatriement'],
+                    units: ['personne', 'forfait']
+                },
+                'guide': {
+                    names: ['Guide touristique', 'Guide privé', 'Accompagnateur'],
+                    units: ['heure', 'jour', 'groupe']
+                },
+                'meal': {
+                    names: ['Petit-déjeuner', 'Déjeuner', 'Dîner', 'Demi-pension', 'Pension complète'],
+                    units: ['personne', 'repas']
+                }
+            };
+
+            // Mettre à jour les suggestions quand le type change
+            typeSelect.addEventListener('change', function() {
+                const selectedType = this.value;
+                if (suggestions[selectedType]) {
+                    const typeData = suggestions[selectedType];
+                    
+                    // Ajouter un datalist pour les suggestions de noms
+                    let datalist = document.getElementById('name-suggestions');
+                    if (!datalist) {
+                        datalist = document.createElement('datalist');
+                        datalist.id = 'name-suggestions';
+                        nameInput.parentNode.appendChild(datalist);
+                        nameInput.setAttribute('list', 'name-suggestions');
+                    }
+                    
+                    // Vider et remplir le datalist
+                    datalist.innerHTML = '';
+                    typeData.names.forEach(name => {
+                        const option = document.createElement('option');
+                        option.value = name;
+                        datalist.appendChild(option);
+                    });
+                    
+                    // Mettre à jour l'unité par défaut si aucune n'est sélectionnée
+                    const unitSelect = document.querySelector('select[name="product[unit]"]');
+                    if (!unitSelect.value && typeData.units.length > 0) {
+                        const firstUnit = typeData.units[0];
+                        Array.from(unitSelect.options).forEach(option => {
+                            if (option.value === firstUnit) {
+                                option.selected = true;
+                            }
+                        });
+                    }
+                }
+            });
+
+            // Validation du formulaire
+            form.addEventListener('submit', function(e) {
+                const name = nameInput.value.trim();
+                const price = parseFloat(priceInput.value);
+                
+                if (!name) {
+                    e.preventDefault();
+                    alert('Veuillez saisir un nom pour le produit.');
+                    nameInput.focus();
+                    return false;
+                }
+                
+                if (isNaN(price) || price < 0) {
+                    e.preventDefault();
+                    alert('Veuillez saisir un prix valide.');
+                    priceInput.focus();
+                    return false;
+                }
+            });
+
+            // Formatage automatique du prix
+            priceInput.addEventListener('blur', function() {
+                const value = parseFloat(this.value);
+                if (!isNaN(value)) {
+                    this.value = value.toFixed(2);
+                }
+            });
+
+            // Mise en majuscule automatique de la première lettre du nom
+            nameInput.addEventListener('blur', function() {
+                if (this.value) {
+                    this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1);
+                }
+            });
+        });
+    </script>
+{% endblock %}
