@@ -387,7 +387,7 @@ class QuoteController extends AbstractController
             'id' => $product->getId(),
             'name' => $product->getName(),
             'description' => $product->getDescription(),
-            'price' => $product->getPrice(),
+            'price' => (float) $product->getPrice(), // Convertir en float pour JavaScript
             'unit' => $product->getUnit(),
             'type' => $product->getType(),
         ]);

@@ -79,6 +79,7 @@ class QuoteItemType extends AbstractType
             ->add('quantity', NumberType::class, [
                 'label' => 'Quantité',
                 'scale' => 2,
+                'data' => 1, // Valeur par défaut
                 'attr' => [
                     'class' => 'form-control quantity-input',
                     'step' => '0.01',
