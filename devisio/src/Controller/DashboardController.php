@@ -32,6 +32,7 @@ class DashboardController extends AbstractController
                 'draft' => $quoteRepository->countByCompanyAndStatus($company, 'draft'),
                 'sent' => $quoteRepository->countByCompanyAndStatus($company, 'sent'),
                 'accepted' => $quoteRepository->countByCompanyAndStatus($company, 'accepted'),
+                'rejected' => $quoteRepository->countByCompanyAndStatus($company, 'rejected'),
             ],
             'invoices' => [
                 'total' => $invoiceRepository->countByCompany($company),
@@ -40,8 +41,61 @@ class DashboardController extends AbstractController
                 'paid' => $invoiceRepository->countByCompanyAndStatus($company, 'paid'),
                 'overdue' => $invoiceRepository->countByCompanyAndStatus($company, 'overdue'),
             ],
-            'customers' => $customerRepository->countByCompany($company),
-            'products' => $productRepository->countByCompany($company),
+            'customers' => [
+                'total' => $customerRepository->countByCompany($company),
+                'individuals' => $customerRepository->createQueryBuilder('c')
+                    ->select('COUNT(c.id)')
+                    ->andWhere('c.company = :company')
+                    ->andWhere('c.type = :type')
+                    ->setParameter('company', $company)
+                    ->setParameter('type', 'individual')
+                    ->getQuery()
+                    ->getSingleScalarResult(),
+                'companies' => $customerRepository->createQueryBuilder('c')
+                    ->select('COUNT(c.id)')
+                    ->andWhere('c.company = :company')
+                    ->andWhere('c.type = :type')
+                    ->setParameter('company', $company)
+                    ->setParameter('type', 'company')
+                    ->getQuery()
+                    ->getSingleScalarResult(),
+                'active' => $customerRepository->createQueryBuilder('c')
+                    ->select('COUNT(c.id)')
+                    ->andWhere('c.company = :company')
+                    ->andWhere('c.isActive = :active')
+                    ->setParameter('company', $company)
+                    ->setParameter('active', true)
+                    ->getQuery()
+                    ->getSingleScalarResult(),
+            ],
+            'products' => [
+                'total' => $productRepository->countByCompany($company),
+                'active' => $productRepository->createQueryBuilder('p')
+                    ->select('COUNT(p.id)')
+                    ->andWhere('p.company = :company')
+                    ->andWhere('p.isActive = :active')
+                    ->setParameter('company', $company)
+                    ->setParameter('active', true)
+                    ->getQuery()
+                    ->getSingleScalarResult(),
+                'by_type' => $productRepository->getProductsByCategory($company),
+                'services' => $productRepository->createQueryBuilder('p')
+                    ->select('COUNT(p.id)')
+                    ->andWhere('p.company = :company')
+                    ->andWhere('p.type IN (:serviceTypes)')
+                    ->setParameter('company', $company)
+                    ->setParameter('serviceTypes', ['activity', 'guide', 'other'])
+                    ->getQuery()
+                    ->getSingleScalarResult(),
+                'products' => $productRepository->createQueryBuilder('p')
+                    ->select('COUNT(p.id)')
+                    ->andWhere('p.company = :company')
+                    ->andWhere('p.type IN (:productTypes)')
+                    ->setParameter('company', $company)
+                    ->setParameter('productTypes', ['accommodation', 'transport', 'package', 'insurance', 'meal'])
+                    ->getQuery()
+                    ->getSingleScalarResult(),
+            ],
         ];
 
         // Recent activity

@@ -83,9 +83,11 @@
                     </button>
                 </div>
                 
-                <div id="quote-items" class="space-y-4" data-prototype="{{ form_widget(form.items.vars.prototype)|e('html_attr') }}">
+                <div id="quote-items" class="space-y-4" 
+                     data-prototype="{{ form_widget(form.items.vars.prototype)|e('html_attr') }}"
+                     data-index="{{ form.items|length }}">
                     {% for item in form.items %}
-                        <div class="quote-item bg-gray-50 p-4 rounded-lg border">
+                        <div class="quote-item bg-gray-50 p-4 rounded-lg border" data-index="{{ loop.index0 }}">
                             <div class="flex justify-between items-start mb-4">
                                 <h4 class="font-medium text-gray-900">Ligne {{ loop.index }}</h4>
                                 {% if form.items|length > 1 %}
@@ -104,41 +106,70 @@
                                 
                                 <div>
                                     {{ form_label(item.productName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                                    {{ form_widget(item.productName, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                    {% set readonly = item.vars.data.product ? true : false %}
+                                    {{ form_widget(item.productName, {'attr': {
+                                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+                                        'readonly': readonly,
+                                        'style': readonly ? 'background-color: #f3f4f6;' : ''
+                                    }}) }}
                                     {{ form_errors(item.productName) }}
                                 </div>
                             </div>
                             
                             <div class="mt-4">
                                 {{ form_label(item.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                                {{ form_widget(item.description, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                {% set readonly = item.vars.data.product ? true : false %}
+                                {{ form_widget(item.description, {'attr': {
+                                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+                                    'readonly': readonly,
+                                    'style': readonly ? 'background-color: #f3f4f6;' : ''
+                                }}) }}
                                 {{ form_errors(item.description) }}
                             </div>
                             
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
                                 <div>
                                     {{ form_label(item.unitPrice, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                                    {{ form_widget(item.unitPrice, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent price-input'}}) }}
+                                    <div class="relative">
+                                        {% set readonly = item.vars.data.product ? true : false %}
+                                        {{ form_widget(item.unitPrice, {'attr': {
+                                            'class': 'w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent price-input',
+                                            'readonly': readonly,
+                                            'style': readonly ? 'background-color: #f3f4f6;' : ''
+                                        }}) }}
+                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 text-sm">€</span>
+                                        </div>
+                                    </div>
                                     {{ form_errors(item.unitPrice) }}
+                                    <p class="text-xs text-gray-500 mt-1">Prix du produit sélectionné</p>
                                 </div>
                                 
                                 <div>
                                     {{ form_label(item.quantity, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                                    {{ form_widget(item.quantity, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent quantity-input'}}) }}
+                                    {{ form_widget(item.quantity, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent quantity-input', 'min': '0', 'step': '0.01'}}) }}
                                     {{ form_errors(item.quantity) }}
+                                    <p class="text-xs text-blue-600 mt-1">Modifiez la quantité</p>
                                 </div>
                                 
                                 <div>
                                     {{ form_label(item.unit, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                                    {{ form_widget(item.unit, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                                    {% set readonly = item.vars.data.product ? true : false %}
+                                    {{ form_widget(item.unit, {'attr': {
+                                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+                                        'readonly': readonly,
+                                        'style': readonly ? 'background-color: #f3f4f6;' : ''
+                                    }}) }}
                                     {{ form_errors(item.unit) }}
+                                    <p class="text-xs text-gray-500 mt-1">Unité du produit</p>
                                 </div>
                                 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Total</label>
-                                    <div class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 item-total">
+                                    <div class="w-full px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 font-semibold item-total">
                                         {{ item.vars.data.formattedTotal|default('0,00 €') }}
                                     </div>
+                                    <p class="text-xs text-blue-600 mt-1">Calculé automatiquement</p>
                                 </div>
                             </div>
                         </div>
@@ -255,62 +286,259 @@
             const form = document.getElementById('quote-form');
             const itemsContainer = document.getElementById('quote-items');
             const addItemBtn = document.getElementById('add-item');
-            let itemIndex = {{ form.items|length }};
+            let itemIndex = parseInt(itemsContainer.dataset.index) || {{ form.items|length }};
             const vatRate = {{ quote.company.vatRate|default(20) }} / 100;
 
             // Add item functionality
             addItemBtn.addEventListener('click', function() {
-                const prototype = itemsContainer.dataset.prototype;
-                const newItem = prototype.replace(/__name__/g, itemIndex);
+                // Créer une nouvelle ligne complète au lieu d'utiliser le prototype
+                const newItemHtml = createNewItemHtml(itemIndex);
                 
                 const div = document.createElement('div');
                 div.className = 'quote-item bg-gray-50 p-4 rounded-lg border';
-                div.innerHTML = newItem;
+                div.setAttribute('data-index', itemIndex);
+                div.innerHTML = newItemHtml;
                 
                 itemsContainer.appendChild(div);
                 itemIndex++;
+                itemsContainer.dataset.index = itemIndex;
                 
                 // Add remove functionality to new item
                 const removeBtn = div.querySelector('.remove-item');
                 if (removeBtn) {
                     removeBtn.addEventListener('click', function() {
                         div.remove();
+                        updateLineNumbers();
                         calculateTotals();
                     });
                 }
                 
                 // Add calculation listeners to new item
                 addCalculationListeners(div);
+                
+                // Add product selection listener to new item
+                const productSelect = div.querySelector('.product-select');
+                if (productSelect) {
+                    addProductSelectListener(productSelect);
+                }
+                
                 calculateTotals();
             });
+
+            function createNewItemHtml(index) {
+                return `
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="font-medium text-gray-900">Ligne ${index + 1}</h4>
+                        <button type="button" class="remove-item text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Produit</label>
+                            <select name="quote[items][${index}][product]" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent product-select">
+                                <option value="">Sélectionner un produit</option>
+                                ${getProductOptions()}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nom du produit</label>
+                            <input type="text" 
+                                   name="quote[items][${index}][productName]" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                   placeholder="Nom du produit ou service"
+                                   readonly
+                                   style="background-color: #f3f4f6;">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                        <textarea name="quote[items][${index}][description]" 
+                                  rows="2"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                  placeholder="Description détaillée"
+                                  readonly
+                                  style="background-color: #f3f4f6;"></textarea>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Prix unitaire</label>
+                            <div class="relative">
+                                <input type="number" 
+                                       name="quote[items][${index}][unitPrice]" 
+                                       step="0.01"
+                                       min="0"
+                                       class="w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent price-input"
+                                       placeholder="0.00"
+                                       readonly
+                                       style="background-color: #f3f4f6;">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 text-sm">€</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Prix du produit sélectionné</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Quantité</label>
+                            <input type="number" 
+                                   name="quote[items][${index}][quantity]" 
+                                   step="0.01"
+                                   min="0"
+                                   value="1"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent quantity-input"
+                                   placeholder="1">
+                            <p class="text-xs text-blue-600 mt-1">Modifiez la quantité</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Unité</label>
+                            <input type="text" 
+                                   name="quote[items][${index}][unit]" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                   placeholder="unité"
+                                   readonly
+                                   style="background-color: #f3f4f6;">
+                            <p class="text-xs text-gray-500 mt-1">Unité du produit</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Total</label>
+                            <div class="w-full px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 font-semibold item-total">
+                                0,00 €
+                            </div>
+                            <p class="text-xs text-blue-600 mt-1">Calculé automatiquement</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function getProductOptions() {
+                // Récupérer les options de produits depuis le premier select existant
+                const firstSelect = document.querySelector('.product-select');
+                if (firstSelect) {
+                    let options = '';
+                    for (let i = 1; i < firstSelect.options.length; i++) { // Skip le premier (placeholder)
+                        const option = firstSelect.options[i];
+                        options += `<option value="${option.value}">${option.text}</option>`;
+                    }
+                    return options;
+                }
+                return '';
+            }
 
             // Remove item functionality for existing items
             document.querySelectorAll('.remove-item').forEach(button => {
                 button.addEventListener('click', function() {
                     if (itemsContainer.children.length > 1) {
                         button.closest('.quote-item').remove();
+                        updateLineNumbers();
                         calculateTotals();
                     }
                 });
             });
 
-            // Product selection functionality
+            // Product selection functionality for existing items
             document.querySelectorAll('.product-select').forEach(select => {
+                addProductSelectListener(select);
+                
+                // Initialiser l'état des champs existants
+                initializeExistingItem(select.closest('.quote-item'));
+            });
+
+            function initializeExistingItem(item) {
+                const productSelect = item.querySelector('.product-select');
+                const nameInput = item.querySelector('input[name*="[productName]"]');
+                const descInput = item.querySelector('textarea[name*="[description]"]');
+                const priceInput = item.querySelector('input[name*="[unitPrice]"]');
+                const unitInput = item.querySelector('input[name*="[unit]"]');
+                
+                // Si un produit est déjà sélectionné, appliquer les styles
+                if (productSelect && productSelect.value) {
+                    [nameInput, descInput, priceInput, unitInput].forEach(input => {
+                        if (input) {
+                            input.readOnly = true;
+                            input.style.backgroundColor = '#f3f4f6';
+                        }
+                    });
+                }
+            }
+
+            function addProductSelectListener(select) {
                 select.addEventListener('change', function() {
+                    const item = this.closest('.quote-item');
+                    const nameInput = item.querySelector('input[name*="[productName]"]');
+                    const descInput = item.querySelector('textarea[name*="[description]"]');
+                    const priceInput = item.querySelector('input[name*="[unitPrice]"]');
+                    const unitInput = item.querySelector('input[name*="[unit]"]');
+                    const quantityInput = item.querySelector('input[name*="[quantity]"]');
+                    
                     if (this.value) {
-                        // Simulate product data (in real app, this would be AJAX)
-                        const item = this.closest('.quote-item');
-                        const selectedOption = this.options[this.selectedIndex];
-                        const productName = selectedOption.text;
+                        // Get product data via AJAX - Construction manuelle de l'URL
+                        const apiUrl = '/quotes/api/products/' + this.value;
+                        console.log('Fetching product data from:', apiUrl); // Debug
                         
-                        // Update fields based on selected product
-                        const nameInput = item.querySelector('input[name*="[productName]"]');
-                        if (nameInput) nameInput.value = productName;
-                        
+                        fetch(apiUrl)
+                            .then(response => {
+                                console.log('Response status:', response.status); // Debug
+                                if (!response.ok) {
+                                    throw new Error('Product not found');
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                console.log('Product data received:', data); // Debug
+                                
+                                if (nameInput) {
+                                    nameInput.value = data.name || '';
+                                    nameInput.readOnly = true;
+                                    nameInput.style.backgroundColor = '#f3f4f6';
+                                }
+                                if (descInput) {
+                                    descInput.value = data.description || '';
+                                    descInput.readOnly = true;
+                                    descInput.style.backgroundColor = '#f3f4f6';
+                                }
+                                if (priceInput) {
+                                    priceInput.value = data.price || '';
+                                    priceInput.readOnly = true;
+                                    priceInput.style.backgroundColor = '#f3f4f6';
+                                }
+                                if (unitInput) {
+                                    unitInput.value = data.unit || '';
+                                    unitInput.readOnly = true;
+                                    unitInput.style.backgroundColor = '#f3f4f6';
+                                }
+                                if (quantityInput && !quantityInput.value) {
+                                    quantityInput.value = '1';
+                                    quantityInput.focus(); // Focus sur la quantité
+                                }
+                                
+                                calculateItemTotal(item);
+                            })
+                            .catch(error => {
+                                console.error('Error fetching product data:', error);
+                                alert('Erreur lors du chargement des données du produit');
+                            });
+                    } else {
+                        // Si aucun produit sélectionné, rendre les champs modifiables
+                        [nameInput, descInput, priceInput, unitInput].forEach(input => {
+                            if (input) {
+                                input.readOnly = false;
+                                input.style.backgroundColor = '';
+                                input.value = '';
+                            }
+                        });
+                        if (quantityInput) quantityInput.value = '1';
                         calculateItemTotal(item);
                     }
                 });
-            });
+            }
 
             // Add calculation listeners to existing items
             document.querySelectorAll('.quote-item').forEach(item => {
@@ -393,17 +621,28 @@
                 }
             }
 
+            function updateLineNumbers() {
+                document.querySelectorAll('.quote-item').forEach((item, index) => {
+                    const lineNumber = item.querySelector('h4');
+                    if (lineNumber) {
+                        lineNumber.textContent = `Ligne ${index + 1}`;
+                    }
+                });
+            }
+
             // Initial calculation
             calculateTotals();
 
             // Warning modal functions
             window.closeWarningModal = function() {
-                document.getElementById('warning-modal').style.display = 'none';
+                const modal = document.getElementById('warning-modal');
+                if (modal) {
+                    modal.style.display = 'none';
+                }
             };
 
             window.confirmChanges = function() {
                 closeWarningModal();
-                // Continue with form submission or other actions
             };
 
             // Show warning for sent quotes
@@ -411,7 +650,10 @@
                 const importantInputs = document.querySelectorAll('input[name*="customer"], input[name*="subject"]');
                 importantInputs.forEach(input => {
                     input.addEventListener('change', function() {
-                        document.getElementById('warning-modal').style.display = 'flex';
+                        const modal = document.getElementById('warning-modal');
+                        if (modal) {
+                            modal.style.display = 'flex';
+                        }
                     });
                 });
             {% endif %}
