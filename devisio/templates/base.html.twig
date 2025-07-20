@@ -45,7 +45,7 @@
                             <h1 class="text-2xl font-bold text-white">Devisio</h1>
                         </div>
                         
-                        <!-- Navigation -->
+                        <!-- Navigation section à mettre à jour dans base.html.twig -->
                         <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
                             <a href="{{ path('app_dashboard') }}" class="flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100 {{ app.request.get('_route') == 'app_dashboard' ? 'bg-primary-50 text-primary-700' : '' }}">
                                 <i class="fas fa-chart-line mr-3"></i>
@@ -67,9 +67,9 @@
                                 Clients
                             </a>
                             
-                            <a href="#" class="flex items-center px-4 py-2 text-gray-400 rounded-lg cursor-not-allowed">
+                            <a href="{{ path('app_products') }}" class="flex items-center px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100 {{ app.request.get('_route') starts with 'app_product' ? 'bg-primary-50 text-primary-700' : '' }}">
                                 <i class="fas fa-box mr-3"></i>
-                                Produits & Services <span class="text-xs ml-2">(bientôt)</span>
+                                Produits & Services
                             </a>
                             
                             {% if is_granted('ROLE_ADMIN') %}
