@@ -92,4 +92,33 @@ class CustomerRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function searchActiveByCompany(Company $company, string $query): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.company = :company')
+            ->andWhere('c.isActive = :active')
+            ->andWhere('c.firstName LIKE :query OR c.lastName LIKE :query OR c.email LIKE :query OR c.companyName LIKE :query')
+            ->setParameter('company', $company)
+            ->setParameter('active', true)
+            ->setParameter('query', '%' . $query . '%')
+            ->orderBy('c.lastName', 'ASC')
+            ->addOrderBy('c.firstName', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+    
+    public function searchAllByCompany(Company $company, string $query): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.company = :company')
+            ->andWhere('c.firstName LIKE :query OR c.lastName LIKE :query OR c.email LIKE :query OR c.companyName LIKE :query')
+            ->setParameter('company', $company)
+            ->setParameter('query', '%' . $query . '%')
+            ->orderBy('c.isActive', 'DESC') // Actifs en premier
+            ->addOrderBy('c.lastName', 'ASC')
+            ->addOrderBy('c.firstName', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

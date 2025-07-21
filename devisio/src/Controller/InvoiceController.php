@@ -92,6 +92,12 @@ class InvoiceController extends AbstractController
         // Vérifier les permissions
         $this->denyAccessUnlessGranted('convert', $quote);
 
+        // NOUVEAUTÉ : Vérifier que le client du devis est toujours actif
+        if (!$quote->getCustomer()->isActive()) {
+            $this->addFlash('error', 'Impossible de créer une facture pour ce devis car le client est inactif. Réactivez d\'abord le client.');
+            return $this->redirectToRoute('app_invoices');
+        }
+
         // Vérifier le token CSRF
         if (!$this->isCsrfTokenValid('create_invoice_from_quote_' . $quote->getId(), $request->request->get('_token'))) {
             $this->addFlash('error', 'Token de sécurité invalide.');
