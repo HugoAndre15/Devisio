@@ -86,6 +86,16 @@ class QuoteController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+        // NOUVEAUTÉ : Vérifier que le client sélectionné est actif
+            $customer = $quote->getCustomer();
+            if (!$customer->isActive()) {
+                $this->addFlash('error', 'Impossible de créer un devis pour un client inactif. Réactivez d\'abord le client.');
+                return $this->render('quote/new.html.twig', [
+                    'quote' => $quote,
+                    'form' => $form,
+                ]);
+            }
+
             // Remove empty items
             foreach ($quote->getItems() as $item) {
                 if (!$item->getProductName()) {

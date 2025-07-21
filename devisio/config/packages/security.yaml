@@ -1,7 +1,6 @@
 security:
     password_hashers:
-        App\Entity\User:
-            algorithm: auto
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
 
     providers:
         app_user_provider:
@@ -30,6 +29,7 @@ security:
                 lifetime: 604800
                 path: /
                 always_remember_me: true
+            user_checker: App\Security\ActiveUserChecker
 
     access_control:
         - { path: ^/login, roles: PUBLIC_ACCESS }

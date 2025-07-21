@@ -35,12 +35,18 @@ class CustomerVoter extends Voter
             return false;
         }
 
+        // NOUVEAUTÉ : Bloquer toutes les opérations sur les clients inactifs
+        // sauf la consultation et la réactivation (edit pour réactiver)
+        if (!$customer->isActive() && $attribute !== self::VIEW && $attribute !== self::EDIT) {
+            return false;
+        }
+
         switch ($attribute) {
             case self::VIEW:
-                return true; // Tous les utilisateurs de l'entreprise peuvent voir
+                return true; // Tous les utilisateurs peuvent voir (même inactifs)
 
             case self::EDIT:
-                return $this->canEdit($user);
+                return $this->canEdit($user); // Permet de réactiver un client inactif
 
             case self::DELETE:
                 return $this->canDelete($user, $customer);

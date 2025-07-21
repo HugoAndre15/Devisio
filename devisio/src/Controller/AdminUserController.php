@@ -106,7 +106,10 @@ class AdminUserController extends AbstractController
     #[Route('/{id}', name: 'app_admin_users_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(User $user): Response
     {
-        $this->denyAccessUnlessGranted('view', $user);
+        // Vérifier que l'utilisateur appartient à la même entreprise
+        if ($user->getCompany() !== $this->getUser()->getCompany()) {
+            throw $this->createAccessDeniedException('Accès refusé.');
+        }
 
         // Statistiques de l'utilisateur
         $stats = [
@@ -137,7 +140,10 @@ class AdminUserController extends AbstractController
     #[Route('/{id}/edit', name: 'app_admin_users_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, User $user, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
-        $this->denyAccessUnlessGranted('edit', $user);
+        // Vérifier que l'utilisateur appartient à la même entreprise
+        if ($user->getCompany() !== $this->getUser()->getCompany()) {
+            throw $this->createAccessDeniedException('Accès refusé.');
+        }
 
         $form = $this->createForm(AdminUserType::class, $user);
         $form->handleRequest($request);
@@ -166,7 +172,10 @@ class AdminUserController extends AbstractController
     #[Route('/{id}/toggle-status', name: 'app_admin_users_toggle_status', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function toggleStatus(Request $request, User $user, EntityManagerInterface $entityManager): Response
     {
-        $this->denyAccessUnlessGranted('edit', $user);
+        // Vérifier que l'utilisateur appartient à la même entreprise
+        if ($user->getCompany() !== $this->getUser()->getCompany()) {
+            throw $this->createAccessDeniedException('Accès refusé.');
+        }
 
         // Empêcher la désactivation du dernier admin
         if ($user->hasRole('ROLE_ADMIN') && $user->isActive()) {
@@ -192,7 +201,10 @@ class AdminUserController extends AbstractController
     #[Route('/{id}/delete', name: 'app_admin_users_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, User $user, EntityManagerInterface $entityManager): Response
     {
-        $this->denyAccessUnlessGranted('delete', $user);
+        // Vérifier que l'utilisateur appartient à la même entreprise
+        if ($user->getCompany() !== $this->getUser()->getCompany()) {
+            throw $this->createAccessDeniedException('Accès refusé.');
+        }
 
         // Empêcher la suppression du dernier admin
         if ($user->hasRole('ROLE_ADMIN')) {
