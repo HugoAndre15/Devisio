@@ -1,0 +1,303 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon profil - Devisio{% endblock %}
+{% block page_title %}Mon profil{% endblock %}
+
+{% block header_actions %}
+    <div class="flex space-x-3">
+        <a href="{{ path('app_user_stats') }}" class="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-100 transition duration-200">
+            <i class="fas fa-chart-bar mr-2"></i>
+            Mes statistiques
+        </a>
+        <a href="{{ path('app_user_edit') }}" class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition duration-200">
+            <i class="fas fa-edit mr-2"></i>
+            Modifier
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="max-w-4xl mx-auto">
+        <!-- Informations personnelles -->
+        <div class="bg-white rounded-lg shadow mb-8">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-user mr-2 text-primary-600"></i>
+                    Informations personnelles
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-blue-100 rounded-full">
+                            <i class="fas fa-user text-blue-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Nom complet</p>
+                            <p class="text-lg text-gray-900">{{ user.fullName }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center">
+                        <div class="p-3 bg-green-100 rounded-full">
+                            <i class="fas fa-envelope text-green-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Email</p>
+                            <p class="text-lg text-gray-900">{{ user.email }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center">
+                        <div class="p-3 bg-purple-100 rounded-full">
+                            <i class="fas fa-building text-purple-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Entreprise</p>
+                            <p class="text-lg text-gray-900">{{ user.company.name }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center">
+                        <div class="p-3 bg-orange-100 rounded-full">
+                            <i class="fas fa-shield-alt text-orange-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Rôle</p>
+                            <div class="flex flex-wrap gap-2 mt-1">
+                                {% for role in user.roles %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                        {% if role == 'ROLE_ADMIN' %}bg-red-100 text-red-800
+                                        {% elseif role == 'ROLE_COMPTABLE' %}bg-blue-100 text-blue-800
+                                        {% elseif role == 'ROLE_EMPLOYE' %}bg-green-100 text-green-800
+                                        {% else %}bg-gray-100 text-gray-800
+                                        {% endif %}">
+                                        {% if role == 'ROLE_ADMIN' %}
+                                            <i class="fas fa-crown mr-1"></i>Administrateur
+                                        {% elseif role == 'ROLE_COMPTABLE' %}
+                                            <i class="fas fa-calculator mr-1"></i>Comptable
+                                        {% elseif role == 'ROLE_EMPLOYE' %}
+                                            <i class="fas fa-user-tie mr-1"></i>Employé
+                                        {% else %}
+                                            <i class="fas fa-user mr-1"></i>{{ role }}
+                                        {% endif %}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center">
+                        <div class="p-3 bg-gray-100 rounded-full">
+                            <i class="fas fa-calendar-plus text-gray-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Membre depuis</p>
+                            <p class="text-lg text-gray-900">{{ user.createdAt|date('d/m/Y') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center">
+                        <div class="p-3 bg-{% if user.isActive %}green{% else %}red{% endif %}-100 rounded-full">
+                            <i class="fas fa-{% if user.isActive %}check-circle{% else %}times-circle{% endif %} text-{% if user.isActive %}green{% else %}red{% endif %}-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Statut</p>
+                            <p class="text-lg {% if user.isActive %}text-green-600{% else %}text-red-600{% endif %}">
+                                {% if user.isActive %}Actif{% else %}Inactif{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques rapides -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="fas fa-file-alt text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Devis créés</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ user.quotes|length }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-receipt text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Factures créées</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ user.invoices|length }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                        <i class="fas fa-chart-line text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">CA généré</p>
+                        <p class="text-2xl font-semibold text-gray-900">
+                            {% set total_ca = 0 %}
+                            {% for invoice in user.invoices %}
+                                {% if invoice.status == 'paid' %}
+                                    {% set total_ca = total_ca + invoice.total %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ total_ca|number_format(0, ',', ' ') }} €
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-orange-100 text-orange-600">
+                        <i class="fas fa-percentage text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Taux conversion</p>
+                        <p class="text-2xl font-semibold text-gray-900">
+                            {% if user.quotes|length > 0 %}
+                                {{ ((user.invoices|length / user.quotes|length) * 100)|number_format(0) }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activité récente -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Derniers devis -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Mes derniers devis</h3>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        {% set recent_quotes = user.quotes|slice(0, 5) %}
+                        {% for quote in recent_quotes %}
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="p-2 rounded-full bg-blue-100 text-blue-600">
+                                        <i class="fas fa-file-alt text-sm"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">{{ quote.number }}</p>
+                                        <p class="text-xs text-gray-500">{{ quote.customer.displayName }}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ quote.statusColor }}-100 text-{{ quote.statusColor }}-800">
+                                        {{ quote.statusLabel }}
+                                    </span>
+                                    <p class="text-xs text-gray-500 mt-1">{{ quote.createdAt|date('d/m/Y') }}</p>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-gray-500 text-center py-8">Aucun devis créé</p>
+                        {% endfor %}
+                    </div>
+                    {% if user.quotes|length > 5 %}
+                        <div class="mt-6">
+                            <a href="{{ path('app_quotes') }}" class="w-full bg-blue-50 text-blue-600 py-2 px-4 rounded-lg hover:bg-blue-100 transition duration-200 text-center block">
+                                Voir tous mes devis
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Dernières factures -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Mes dernières factures</h3>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        {% set recent_invoices = user.invoices|slice(0, 5) %}
+                        {% for invoice in recent_invoices %}
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="p-2 rounded-full bg-green-100 text-green-600">
+                                        <i class="fas fa-receipt text-sm"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">{{ invoice.number }}</p>
+                                        <p class="text-xs text-gray-500">{{ invoice.customer.displayName }}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ invoice.statusColor }}-100 text-{{ invoice.statusColor }}-800">
+                                        {{ invoice.statusLabel }}
+                                    </span>
+                                    <p class="text-xs text-gray-500 mt-1">{{ invoice.formattedTotal }}</p>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-gray-500 text-center py-8">Aucune facture créée</p>
+                        {% endfor %}
+                    </div>
+                    {% if user.invoices|length > 5 %}
+                        <div class="mt-6">
+                            <a href="{{ path('app_invoices') }}" class="w-full bg-green-50 text-green-600 py-2 px-4 rounded-lg hover:bg-green-100 transition duration-200 text-center block">
+                                Voir toutes mes factures
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions rapides -->
+        <div class="mt-8 bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Actions rapides</h3>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <a href="{{ path('app_user_edit') }}" class="flex items-center p-4 bg-primary-50 rounded-lg hover:bg-primary-100 transition duration-200">
+                        <div class="p-2 bg-primary-100 rounded-lg">
+                            <i class="fas fa-edit text-primary-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900">Modifier le profil</p>
+                            <p class="text-xs text-gray-500">Mettre à jour vos informations</p>
+                        </div>
+                    </a>
+                    
+                    <a href="{{ path('app_user_stats') }}" class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition duration-200">
+                        <div class="p-2 bg-blue-100 rounded-lg">
+                            <i class="fas fa-chart-bar text-blue-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900">Mes statistiques</p>
+                            <p class="text-xs text-gray-500">Voir mes performances</p>
+                        </div>
+                    </a>
+                    
+                    <a href="{{ path('app_logout') }}" class="flex items-center p-4 bg-red-50 rounded-lg hover:bg-red-100 transition duration-200">
+                        <div class="p-2 bg-red-100 rounded-lg">
+                            <i class="fas fa-sign-out-alt text-red-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900">Se déconnecter</p>
+                            <p class="text-xs text-gray-500">Quitter l'application</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

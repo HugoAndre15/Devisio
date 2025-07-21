@@ -1,0 +1,410 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion de l'entreprise - Administration{% endblock %}
+{% block page_title %}Gestion de l'entreprise{% endblock %}
+
+{% block header_actions %}
+    <div class="flex space-x-3">
+        <button onclick="backupData()" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition duration-200">
+            <i class="fas fa-download mr-2"></i>
+            Sauvegarde
+        </button>
+        <a href="{{ path('app_admin_company_edit') }}" class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition duration-200">
+            <i class="fas fa-edit mr-2"></i>
+            Modifier
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Informations de l'entreprise -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <!-- Informations principales -->
+        <div class="lg:col-span-2 bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-building mr-2 text-primary-600"></i>
+                    Informations de l'entreprise
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-blue-100 rounded-full">
+                            <i class="fas fa-building text-blue-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Nom de l'entreprise</p>
+                            <p class="text-lg text-gray-900">{{ company.name }}</p>
+                        </div>
+                    </div>
+
+                    {% if company.siret %}
+                        <div class="flex items-center">
+                            <div class="p-3 bg-green-100 rounded-full">
+                                <i class="fas fa-id-card text-green-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">SIRET</p>
+                                <p class="text-lg text-gray-900">{{ company.siret }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if company.vatNumber %}
+                        <div class="flex items-center">
+                            <div class="p-3 bg-purple-100 rounded-full">
+                                <i class="fas fa-percentage text-purple-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">N° TVA</p>
+                                <p class="text-lg text-gray-900">{{ company.vatNumber }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="flex items-center">
+                        <div class="p-3 bg-orange-100 rounded-full">
+                            <i class="fas fa-map-marker-alt text-orange-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Adresse</p>
+                            <p class="text-lg text-gray-900">{{ company.fullAddress }}</p>
+                        </div>
+                    </div>
+
+                    {% if company.phone %}
+                        <div class="flex items-center">
+                            <div class="p-3 bg-yellow-100 rounded-full">
+                                <i class="fas fa-phone text-yellow-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Téléphone</p>
+                                <p class="text-lg text-gray-900">{{ company.phone }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if company.email %}
+                        <div class="flex items-center">
+                            <div class="p-3 bg-red-100 rounded-full">
+                                <i class="fas fa-envelope text-red-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Email</p>
+                                <p class="text-lg text-gray-900">{{ company.email }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if company.website %}
+                        <div class="flex items-center">
+                            <div class="p-3 bg-indigo-100 rounded-full">
+                                <i class="fas fa-globe text-indigo-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Site web</p>
+                                <p class="text-lg text-gray-900">
+                                    <a href="{{ company.website }}" target="_blank" class="text-blue-600 hover:text-blue-800">
+                                        {{ company.website }}
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="flex items-center">
+                        <div class="p-3 bg-pink-100 rounded-full">
+                            <i class="fas fa-calculator text-pink-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600">Taux TVA</p>
+                            <p class="text-lg text-gray-900">{{ company.vatRate }}%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logo et statut -->
+        <div class="space-y-6">
+            <!-- Logo -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Logo</h3>
+                </div>
+                <div class="p-6 text-center">
+                    {% if company.logo %}
+                        <div class="mb-4">
+                            <img src="{{ asset('uploads/logos/' ~ company.logo) }}" 
+                                 alt="Logo {{ company.name }}" 
+                                 class="max-h-32 mx-auto rounded-lg shadow">
+                        </div>
+                        <form method="POST" action="{{ path('app_admin_company_remove_logo') }}" class="inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('remove_logo') }}">
+                            <button type="submit" class="text-red-600 hover:text-red-800 text-sm">
+                                <i class="fas fa-trash mr-1"></i>
+                                Supprimer le logo
+                            </button>
+                        </form>
+                    {% else %}
+                        <div class="p-8 text-gray-500">
+                            <i class="fas fa-image text-4xl mb-4"></i>
+                            <p>Aucun logo défini</p>
+                            <a href="{{ path('app_admin_company_edit') }}" class="text-primary-600 hover:text-primary-800 text-sm mt-2 inline-block">
+                                Ajouter un logo
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Statut de l'entreprise -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Statut</h3>
+                </div>
+                <div class="p-6">
+                    <div class="text-center">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                            {% if company.isActive %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {% if company.isActive %}
+                                <i class="fas fa-check-circle mr-2"></i>Entreprise active
+                            {% else %}
+                                <i class="fas fa-times-circle mr-2"></i>Entreprise inactive
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="mt-4 text-center text-sm text-gray-500">
+                        <p>Créée le {{ company.createdAt|date('d/m/Y') }}</p>
+                        <p>Dernière modification le {{ company.updatedAt|date('d/m/Y à H:i') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Utilisateurs -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <i class="fas fa-users text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Utilisateurs</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.users_count }}</p>
+                    <p class="text-xs text-gray-500">{{ stats.active_users }} actifs</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clients -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <i class="fas fa-user-friends text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Clients</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.customers_count }}</p>
+                    <p class="text-xs text-gray-500">{{ stats.active_customers }} actifs</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Produits -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                    <i class="fas fa-box text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Produits</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.products_count }}</p>
+                    <p class="text-xs text-gray-500">{{ stats.active_products }} actifs</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-orange-100 text-orange-600">
+                    <i class="fas fa-file-alt text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Documents</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.quotes_count + stats.invoices_count }}</p>
+                    <p class="text-xs text-gray-500">{{ stats.quotes_count }} devis, {{ stats.invoices_count }} factures</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Métriques financières -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Chiffre d'affaires</p>
+                    <p class="text-2xl font-bold text-green-600">
+                        {{ stats.total_revenue|number_format(0, ',', ' ') }} €
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1">CA total encaissé</p>
+                </div>
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <i class="fas fa-euro-sign text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">En attente</p>
+                    <p class="text-2xl font-bold text-orange-600">
+                        {{ stats.pending_revenue|number_format(0, ',', ' ') }} €
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1">Factures impayées</p>
+                </div>
+                <div class="p-3 rounded-full bg-orange-100 text-orange-600">
+                    <i class="fas fa-hourglass-half text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Taux conversion</p>
+                    <p class="text-2xl font-bold text-blue-600">
+                        {% if stats.quotes_count > 0 %}
+                            {{ ((stats.invoices_count / stats.quotes_count) * 100)|number_format(0) }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1">Devis → Factures</p>
+                </div>
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <i class="fas fa-chart-line text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions d'administration -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">
+                <i class="fas fa-cogs mr-2 text-gray-600"></i>
+                Actions d'administration
+            </h3>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button onclick="backupData()" class="flex items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition duration-200">
+                    <div class="p-2 bg-orange-100 rounded-lg">
+                        <i class="fas fa-download text-orange-600"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-900">Sauvegarder</p>
+                        <p class="text-xs text-gray-500">Exporter toutes les données</p>
+                    </div>
+                </button>
+                
+                <a href="{{ path('app_admin_company_edit') }}" class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition duration-200">
+                    <div class="p-2 bg-blue-100 rounded-lg">
+                        <i class="fas fa-edit text-blue-600"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-gray-900">Modifier</p>
+                        <p class="text-xs text-gray-500">Informations de l'entreprise</p>
+                    </div>
+                </a>
+                
+                <form method="POST" action="{{ path('app_admin_company_reset_settings') }}" class="inline">
+                    <input type="hidden" name="_token" value="{{ csrf_token('reset_settings') }}">
+                    <button type="submit" onclick="return confirm('Êtes-vous sûr de vouloir réinitialiser les paramètres par défaut ?')" 
+                            class="w-full flex items-center p-4 bg-red-50 rounded-lg hover:bg-red-100 transition duration-200">
+                        <div class="p-2 bg-red-100 rounded-lg">
+                            <i class="fas fa-undo text-red-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900">Réinitialiser</p>
+                            <p class="text-xs text-gray-500">Paramètres par défaut</p>
+                        </div>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations système -->
+    <div class="mt-8 bg-gray-50 rounded-lg p-6">
+        <h4 class="text-md font-semibold text-gray-900 mb-4">
+            <i class="fas fa-info-circle mr-2 text-blue-600"></i>
+            Informations système
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+            <div>
+                <span class="font-medium text-gray-600">Version:</span>
+                <span class="text-gray-900 ml-2">Devisio v1.0</span>
+            </div>
+            <div>
+                <span class="font-medium text-gray-600">Environnement:</span>
+                <span class="text-gray-900 ml-2">{{ app.environment }}</span>
+            </div>
+            <div>
+                <span class="font-medium text-gray-600">Dernière sauvegarde:</span>
+                <span class="text-gray-900 ml-2">Jamais</span>
+            </div>
+            <div>
+                <span class="font-medium text-gray-600">Espace utilisé:</span>
+                <span class="text-gray-900 ml-2">~ {{ (stats.total_revenue / 1000000)|round(1) }}MB</span>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function backupData() {
+            // Simulation d'une sauvegarde
+            const button = event.target.closest('button');
+            const originalText = button.innerHTML;
+            
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sauvegarde...';
+            
+            setTimeout(() => {
+                button.disabled = false;
+                button.innerHTML = originalText;
+                
+                // Afficher un message
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'fixed top-4 right-4 bg-orange-100 border border-orange-400 text-orange-700 px-4 py-3 rounded z-50';
+                alertDiv.innerHTML = '<i class="fas fa-info-circle mr-2"></i>Fonctionnalité de sauvegarde en cours de développement.';
+                document.body.appendChild(alertDiv);
+                
+                setTimeout(() => {
+                    document.body.removeChild(alertDiv);
+                }, 3000);
+            }, 2000);
+        }
+        
+        // Actualisation automatique des statistiques toutes les 30 secondes
+        setInterval(() => {
+            fetch('{{ path('app_admin_company_stats') }}')
+                .then(response => response.json())
+                .then(data => {
+                    // Mettre à jour les statistiques en temps réel si nécessaire
+                    console.log('Stats updated:', data);
+                })
+                .catch(error => console.log('Stats update failed:', error));
+        }, 30000);
+    </script>
+{% endblock %}

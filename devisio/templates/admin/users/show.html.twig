@@ -1,0 +1,296 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ user.fullName }} - Administration{% endblock %}
+{% block page_title %}Profil utilisateur{% endblock %}
+
+{% block header_actions %}
+    <div class="flex space-x-3">
+        {% if user != app.user %}
+            <form method="POST" action="{{ path('app_admin_users_toggle_status', {id: user.id}) }}" class="inline">
+                <input type="hidden" name="_token" value="{{ csrf_token('toggle_status' ~ user.id) }}">
+                <button type="submit" class="{% if user.isActive %}bg-orange-600 hover:bg-orange-700{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white px-4 py-2 rounded-lg transition duration-200">
+                    <i class="fas fa-{% if user.isActive %}pause{% else %}play{% endif %} mr-2"></i>
+                    {% if user.isActive %}Désactiver{% else %}Activer{% endif %}
+                </button>
+            </form>
+        {% endif %}
+        
+        <a href="{{ path('app_admin_users_edit', {id: user.id}) }}" class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition duration-200">
+            <i class="fas fa-edit mr-2"></i>
+            Modifier
+        </a>
+        
+        <a href="{{ path('app_admin_users') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour à la liste
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="max-w-4xl mx-auto">
+        <!-- En-tête utilisateur -->
+        <div class="bg-white rounded-lg shadow mb-8">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 h-20 w-20">
+                        <div class="h-20 w-20 rounded-full bg-primary-100 flex items-center justify-center">
+                            <span class="text-primary-600 font-medium text-2xl">
+                                {{ user.firstName|first }}{{ user.lastName|first }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="ml-6">
+                        <h2 class="text-2xl font-bold text-gray-900">{{ user.fullName }}</h2>
+                        <p class="text-gray-600">{{ user.email }}</p>
+                        <div class="flex items-center mt-2 space-x-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                {% if user.isActive %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {% if user.isActive %}
+                                    <i class="fas fa-check-circle mr-1"></i>Actif
+                                {% else %}
+                                    <i class="fas fa-times-circle mr-1"></i>Inactif
+                                {% endif %}
+                            </span>
+                            <span class="text-sm text-gray-500">
+                                Membre depuis le {{ user.createdAt|date('d/m/Y') }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="ml-auto">
+                        <div class="flex flex-wrap gap-2">
+                            {% for role in user.roles %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                                    {% if role == 'ROLE_ADMIN' %}bg-red-100 text-red-800
+                                    {% elseif role == 'ROLE_COMPTABLE' %}bg-blue-100 text-blue-800
+                                    {% elseif role == 'ROLE_EMPLOYE' %}bg-green-100 text-green-800
+                                    {% else %}bg-gray-100 text-gray-800
+                                    {% endif %}">
+                                    {% if role == 'ROLE_ADMIN' %}
+                                        <i class="fas fa-crown mr-2"></i>Administrateur
+                                    {% elseif role == 'ROLE_COMPTABLE' %}
+                                        <i class="fas fa-calculator mr-2"></i>Comptable
+                                    {% elseif role == 'ROLE_EMPLOYE' %}
+                                        <i class="fas fa-user-tie mr-2"></i>Employé
+                                    {% else %}
+                                        {{ role }}
+                                    {% endif %}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="fas fa-file-alt text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Devis créés</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ stats.quotes_count }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-receipt text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Factures créées</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ stats.invoices_count }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                        <i class="fas fa-euro-sign text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">CA généré</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ stats.ca_generated|number_format(0, ',', ' ') }} €</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-orange-100 text-orange-600">
+                        <i class="fas fa-percentage text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Taux conversion</p>
+                        <p class="text-2xl font-semibold text-gray-900">
+                            {% if stats.quotes_count > 0 %}
+                                {{ ((stats.invoices_count / stats.quotes_count) * 100)|number_format(0) }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activité récente -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Derniers devis -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Derniers devis créés</h3>
+                </div>
+                <div class="p-6">
+                    {% set recent_quotes = user.quotes|slice(0, 5) %}
+                    {% if recent_quotes|length > 0 %}
+                        <div class="space-y-4">
+                            {% for quote in recent_quotes %}
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center">
+                                        <div class="p-2 rounded-full bg-blue-100 text-blue-600">
+                                            <i class="fas fa-file-alt text-sm"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">{{ quote.number }}</p>
+                                            <p class="text-xs text-gray-500">{{ quote.customer.displayName }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ quote.statusColor }}-100 text-{{ quote.statusColor }}-800">
+                                            {{ quote.statusLabel }}
+                                        </span>
+                                        <p class="text-xs text-gray-500 mt-1">{{ quote.formattedTotal }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-4">
+                            <a href="{{ path('app_quotes') }}?created_by={{ user.id }}" class="text-blue-600 hover:text-blue-800 text-sm">
+                                Voir tous les devis →
+                            </a>
+                        </div>
+                    {% else %}
+                        <p class="text-gray-500 text-center py-8">Aucun devis créé</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Dernières factures -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Dernières factures créées</h3>
+                </div>
+                <div class="p-6">
+                    {% set recent_invoices = user.invoices|slice(0, 5) %}
+                    {% if recent_invoices|length > 0 %}
+                        <div class="space-y-4">
+                            {% for invoice in recent_invoices %}
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center">
+                                        <div class="p-2 rounded-full bg-green-100 text-green-600">
+                                            <i class="fas fa-receipt text-sm"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">{{ invoice.number }}</p>
+                                            <p class="text-xs text-gray-500">{{ invoice.customer.displayName }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ invoice.statusColor }}-100 text-{{ invoice.statusColor }}-800">
+                                            {{ invoice.statusLabel }}
+                                        </span>
+                                        <p class="text-xs text-gray-500 mt-1">{{ invoice.formattedTotal }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-4">
+                            <a href="{{ path('app_invoices') }}?created_by={{ user.id }}" class="text-green-600 hover:text-green-800 text-sm">
+                                Voir toutes les factures →
+                            </a>
+                        </div>
+                    {% else %}
+                        <p class="text-gray-500 text-center py-8">Aucune facture créée</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions d'administration -->
+        <div class="mt-8 bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Actions d'administration</h3>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <a href="{{ path('app_admin_users_edit', {id: user.id}) }}" class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition duration-200">
+                        <div class="p-2 bg-blue-100 rounded-lg">
+                            <i class="fas fa-edit text-blue-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900">Modifier</p>
+                            <p class="text-xs text-gray-500">Informations et rôles</p>
+                        </div>
+                    </a>
+                    
+                    {% if user != app.user %}
+                        <form method="POST" action="{{ path('app_admin_users_toggle_status', {id: user.id}) }}" class="inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_status' ~ user.id) }}">
+                            <button type="submit" class="w-full flex items-center p-4 {% if user.isActive %}bg-orange-50 hover:bg-orange-100{% else %}bg-green-50 hover:bg-green-100{% endif %} rounded-lg transition duration-200">
+                                <div class="p-2 {% if user.isActive %}bg-orange-100{% else %}bg-green-100{% endif %} rounded-lg">
+                                    <i class="fas fa-{% if user.isActive %}pause{% else %}play{% endif %} {% if user.isActive %}text-orange-600{% else %}text-green-600{% endif %}"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-900">{% if user.isActive %}Désactiver{% else %}Activer{% endif %}</p>
+                                    <p class="text-xs text-gray-500">{% if user.isActive %}Suspendre l'accès{% else %}Autoriser l'accès{% endif %}</p>
+                                </div>
+                            </button>
+                        </form>
+
+                        {% if user.quotes|length == 0 and user.invoices|length == 0 %}
+                            <form method="POST" action="{{ path('app_admin_users_delete', {id: user.id}) }}" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                                <button type="submit" class="w-full flex items-center p-4 bg-red-50 rounded-lg hover:bg-red-100 transition duration-200">
+                                    <div class="p-2 bg-red-100 rounded-lg">
+                                        <i class="fas fa-trash text-red-600"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">Supprimer</p>
+                                        <p class="text-xs text-gray-500">Définitivement</p>
+                                    </div>
+                                </button>
+                            </form>
+                        {% else %}
+                            <div class="flex items-center p-4 bg-gray-50 rounded-lg cursor-not-allowed opacity-50">
+                                <div class="p-2 bg-gray-100 rounded-lg">
+                                    <i class="fas fa-trash text-gray-400"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-500">Supprimer</p>
+                                    <p class="text-xs text-gray-400">Impossible (a des documents)</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="flex items-center p-4 bg-gray-50 rounded-lg">
+                            <div class="p-2 bg-gray-100 rounded-lg">
+                                <i class="fas fa-user text-gray-400"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-600">C'est vous !</p>
+                                <p class="text-xs text-gray-500">Profil personnel</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

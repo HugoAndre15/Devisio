@@ -1,0 +1,313 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier l'entreprise - Administration{% endblock %}
+{% block page_title %}Modifier l'entreprise{% endblock %}
+
+{% block header_actions %}
+    <div class="flex space-x-3">
+        <a href="{{ path('app_admin_company') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-building mr-2 text-primary-600"></i>
+                    Modifier les informations de l'entreprise
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">
+                    Mettez à jour les informations générales de votre entreprise.
+                </p>
+            </div>
+
+            {{ form_start(form, {'attr': {'class': 'p-6 space-y-8', 'enctype': 'multipart/form-data'}}) }}
+                
+                <!-- Informations générales -->
+                <div>
+                    <h4 class="text-md font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-info-circle mr-2 text-blue-600"></i>
+                        Informations générales
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="md:col-span-2">
+                            {{ form_label(form.name, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.name, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.name) }}
+                        </div>
+
+                        <div>
+                            {{ form_label(form.siret, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.siret, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.siret) }}
+                        </div>
+
+                        <div>
+                            {{ form_label(form.vatNumber, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.vatNumber, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.vatNumber) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adresse -->
+                <div class="pt-6 border-t border-gray-200">
+                    <h4 class="text-md font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-map-marker-alt mr-2 text-green-600"></i>
+                        Adresse
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="md:col-span-2">
+                            {{ form_label(form.address, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.address, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.address) }}
+                        </div>
+
+                        <div>
+                            {{ form_label(form.postalCode, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.postalCode, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.postalCode) }}
+                        </div>
+
+                        <div>
+                            {{ form_label(form.city, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.city, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.city) }}
+                        </div>
+
+                        <div class="md:col-span-2">
+                            {{ form_label(form.country, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.country, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.country) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact -->
+                <div class="pt-6 border-t border-gray-200">
+                    <h4 class="text-md font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-phone mr-2 text-purple-600"></i>
+                        Informations de contact
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            {{ form_label(form.phone, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.phone, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.phone) }}
+                        </div>
+
+                        <div>
+                            {{ form_label(form.email, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.email, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.email) }}
+                        </div>
+
+                        <div class="md:col-span-2">
+                            {{ form_label(form.website, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.website, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.website) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logo -->
+                <div class="pt-6 border-t border-gray-200">
+                    <h4 class="text-md font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-image mr-2 text-orange-600"></i>
+                        Logo de l'entreprise
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            {{ form_label(form.logoFile, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.logoFile, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.logoFile) }}
+                            <div class="mt-1 text-xs text-gray-500">
+                                {{ form_help(form.logoFile) }}
+                            </div>
+                        </div>
+                        
+                        {% if company.logo %}
+                            <div>
+                                <p class="block text-sm font-medium text-gray-700 mb-2">Logo actuel</p>
+                                <div class="p-4 border border-gray-200 rounded-lg">
+                                    <img src="{{ asset('uploads/logos/' ~ company.logo) }}" 
+                                         alt="Logo actuel" 
+                                         class="max-h-24 rounded shadow">
+                                    <form method="POST" action="{{ path('app_admin_company_remove_logo') }}" class="mt-2">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('remove_logo') }}">
+                                        <button type="submit" class="text-red-600 hover:text-red-800 text-sm">
+                                            <i class="fas fa-trash mr-1"></i>Supprimer
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Paramètres -->
+                <div class="pt-6 border-t border-gray-200">
+                    <h4 class="text-md font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-cogs mr-2 text-red-600"></i>
+                        Paramètres
+                    </h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            {{ form_label(form.vatRate, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.vatRate, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.vatRate) }}
+                            <div class="mt-1 text-xs text-gray-500">
+                                {{ form_help(form.vatRate) }}
+                            </div>
+                        </div>
+
+                        <div class="flex items-center">
+                            {{ form_widget(form.isActive, {'attr': {'class': 'h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded'}}) }}
+                            <div class="ml-3">
+                                {{ form_label(form.isActive, null, {'label_attr': {'class': 'text-sm font-medium text-gray-700'}}) }}
+                                <p class="text-xs text-gray-500">{{ form_help(form.isActive) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations système -->
+                <div class="pt-6 border-t border-gray-200">
+                    <h4 class="text-md font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-info-circle mr-2 text-gray-600"></i>
+                        Informations système
+                    </h4>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span class="font-medium text-gray-600">Entreprise créée le :</span>
+                                <span class="text-gray-900 ml-2">{{ company.createdAt|date('d/m/Y à H:i') }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Dernière modification :</span>
+                                <span class="text-gray-900 ml-2">{{ company.updatedAt|date('d/m/Y à H:i') }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Nombre d'utilisateurs :</span>
+                                <span class="text-gray-900 ml-2">{{ company.users|length }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Documents créés :</span>
+                                <span class="text-gray-900 ml-2">{{ company.quotes|length + company.invoices|length }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="pt-6 border-t border-gray-200">
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div class="text-sm text-gray-500">
+                            <i class="fas fa-shield-alt mr-1"></i>
+                            Seuls les administrateurs peuvent modifier ces informations.
+                        </div>
+                        
+                        <div class="flex space-x-3">
+                            <a href="{{ path('app_admin_company') }}" class="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-200">
+                                <i class="fas fa-times mr-2"></i>
+                                Annuler
+                            </a>
+                            
+                            <button type="submit" class="bg-primary-600 text-white py-2 px-6 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition duration-200">
+                                <i class="fas fa-save mr-2"></i>
+                                Enregistrer les modifications
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prévisualisation du logo
+            const logoInput = document.querySelector('input[type="file"]');
+            if (logoInput) {
+                logoInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            // Créer ou mettre à jour la prévisualisation
+                            let preview = document.getElementById('logo-preview');
+                            if (!preview) {
+                                preview = document.createElement('div');
+                                preview.id = 'logo-preview';
+                                preview.className = 'mt-3 p-3 border border-gray-200 rounded-lg';
+                                logoInput.parentNode.appendChild(preview);
+                            }
+                            
+                            preview.innerHTML = `
+                                <p class="text-sm font-medium text-gray-700 mb-2">Prévisualisation :</p>
+                                <img src="${e.target.result}" alt="Prévisualisation" class="max-h-24 rounded shadow">
+                            `;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            // Validation du format SIRET (14 chiffres)
+            const siretInput = document.querySelector('input[name*="siret"]');
+            if (siretInput) {
+                siretInput.addEventListener('input', function() {
+                    const value = this.value.replace(/\s/g, ''); // Supprimer les espaces
+                    if (value && !/^\d{14}$/.test(value)) {
+                        this.style.borderColor = '#ef4444';
+                        this.style.backgroundColor = '#fef2f2';
+                    } else {
+                        this.style.borderColor = '';
+                        this.style.backgroundColor = '';
+                    }
+                });
+            }
+
+            // Validation du numéro de TVA
+            const vatInput = document.querySelector('input[name*="vatNumber"]');
+            if (vatInput) {
+                vatInput.addEventListener('input', function() {
+                    const value = this.value.toUpperCase();
+                    // Format français : FR + 11 chiffres
+                    if (value && !/^FR\d{11}$/.test(value)) {
+                        this.style.borderColor = '#f59e0b';
+                        this.style.backgroundColor = '#fffbeb';
+                    } else {
+                        this.style.borderColor = '';
+                        this.style.backgroundColor = '';
+                    }
+                });
+            }
+
+            // Validation de l'URL du site web
+            const websiteInput = document.querySelector('input[name*="website"]');
+            if (websiteInput) {
+                websiteInput.addEventListener('blur', function() {
+                    const value = this.value.trim();
+                    if (value && !value.startsWith('http://') && !value.startsWith('https://')) {
+                        this.value = 'https://' + value;
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}

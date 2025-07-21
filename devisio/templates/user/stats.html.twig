@@ -1,0 +1,390 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes statistiques - Devisio{% endblock %}
+{% block page_title %}Mes statistiques{% endblock %}
+
+{% block header_actions %}
+    <div class="flex space-x-3">
+        <a href="{{ path('app_user_profile') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour au profil
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="max-w-6xl mx-auto">
+        <!-- En-tête des statistiques -->
+        <div class="bg-white rounded-lg shadow mb-8">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="p-4 bg-primary-100 rounded-full">
+                        <i class="fas fa-chart-line text-2xl text-primary-600"></i>
+                    </div>
+                    <div class="ml-6">
+                        <h2 class="text-2xl font-bold text-gray-900">Mes performances</h2>
+                        <p class="text-gray-600">{{ user.fullName }} - {{ user.company.name }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques principales -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total devis -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="fas fa-file-alt text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Devis créés</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ stats.quotes_created }}</p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-500">
+                        Montant total : {{ stats.total_quotes_amount|number_format(0, ',', ' ') }} €
+                    </p>
+                </div>
+            </div>
+
+            <!-- Total factures -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-receipt text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Factures créées</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ stats.invoices_created }}</p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-500">
+                        Montant total : {{ stats.total_invoices_amount|number_format(0, ',', ' ') }} €
+                    </p>
+                </div>
+            </div>
+
+            <!-- Taux de conversion -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                        <i class="fas fa-percentage text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Taux conversion</p>
+                        <p class="text-2xl font-semibold text-gray-900">
+                            {% if stats.quotes_created > 0 %}
+                                {{ ((stats.invoices_created / stats.quotes_created) * 100)|number_format(0) }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-500">Devis → Factures</p>
+                </div>
+            </div>
+
+            <!-- CA généré -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-orange-100 text-orange-600">
+                        <i class="fas fa-euro-sign text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">CA encaissé</p>
+                        <p class="text-2xl font-semibold text-gray-900">
+                            {% set ca_paid = 0 %}
+                            {% for invoice in user.invoices %}
+                                {% if invoice.status == 'paid' %}
+                                    {% set ca_paid = ca_paid + invoice.total %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ ca_paid|number_format(0, ',', ' ') }} €
+                        </p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-500">Factures payées</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Répartition des devis par statut -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Répartition des devis</h3>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-gray-400 rounded-full mr-3"></div>
+                                <span class="text-sm text-gray-600">Brouillons</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-sm font-medium text-gray-900">{{ stats.quotes_by_status.draft }}</span>
+                                <div class="ml-2 w-20 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-gray-400 h-2 rounded-full" style="width: {% if stats.quotes_created > 0 %}{{ (stats.quotes_by_status.draft / stats.quotes_created * 100) }}%{% else %}0%{% endif %}"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                                <span class="text-sm text-gray-600">Envoyés</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-sm font-medium text-gray-900">{{ stats.quotes_by_status.sent }}</span>
+                                <div class="ml-2 w-20 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: {% if stats.quotes_created > 0 %}{{ (stats.quotes_by_status.sent / stats.quotes_created * 100) }}%{% else %}0%{% endif %}"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                <span class="text-sm text-gray-600">Acceptés</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-sm font-medium text-gray-900">{{ stats.quotes_by_status.accepted }}</span>
+                                <div class="ml-2 w-20 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: {% if stats.quotes_created > 0 %}{{ (stats.quotes_by_status.accepted / stats.quotes_created * 100) }}%{% else %}0%{% endif %}"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
+                                <span class="text-sm text-gray-600">Refusés</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-sm font-medium text-gray-900">{{ stats.quotes_by_status.rejected }}</span>
+                                <div class="ml-2 w-20 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-red-500 h-2 rounded-full" style="width: {% if stats.quotes_created > 0 %}{{ (stats.quotes_by_status.rejected / stats.quotes_created * 100) }}%{% else %}0%{% endif %}"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-orange-500 rounded-full mr-3"></div>
+                                <span class="text-sm text-gray-600">Expirés</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-sm font-medium text-gray-900">{{ stats.quotes_by_status.expired }}</span>
+                                <div class="ml-2 w-20 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-orange-500 h-2 rounded-full" style="width: {% if stats.quotes_created > 0 %}{{ (stats.quotes_by_status.expired / stats.quotes_created * 100) }}%{% else %}0%{% endif %}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Répartition des factures par statut -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Répartition des factures</h3>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-gray-400 rounded-full mr-3"></div>
+                                <span class="text-sm text-gray-600">Brouillons</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-sm font-medium text-gray-900">{{ stats.invoices_by_status.draft }}</span>
+                                <div class="ml-2 w-20 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-gray-400 h-2 rounded-full" style="width: {% if stats.invoices_created > 0 %}{{ (stats.invoices_by_status.draft / stats.invoices_created * 100) }}%{% else %}0%{% endif %}"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                                <span class="text-sm text-gray-600">Envoyées</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-sm font-medium text-gray-900">{{ stats.invoices_by_status.sent }}</span>
+                                <div class="ml-2 w-20 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: {% if stats.invoices_created > 0 %}{{ (stats.invoices_by_status.sent / stats.invoices_created * 100) }}%{% else %}0%{% endif %}"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                <span class="text-sm text-gray-600">Payées</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-sm font-medium text-gray-900">{{ stats.invoices_by_status.paid }}</span>
+                                <div class="ml-2 w-20 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: {% if stats.invoices_created > 0 %}{{ (stats.invoices_by_status.paid / stats.invoices_created * 100) }}%{% else %}0%{% endif %}"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
+                                <span class="text-sm text-gray-600">En retard</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-sm font-medium text-gray-900">{{ stats.invoices_by_status.overdue }}</span>
+                                <div class="ml-2 w-20 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-red-500 h-2 rounded-full" style="width: {% if stats.invoices_created > 0 %}{{ (stats.invoices_by_status.overdue / stats.invoices_created * 100) }}%{% else %}0%{% endif %}"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-orange-500 rounded-full mr-3"></div>
+                                <span class="text-sm text-gray-600">Annulées</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-sm font-medium text-gray-900">{{ stats.invoices_by_status.cancelled }}</span>
+                                <div class="ml-2 w-20 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-orange-500 h-2 rounded-full" style="width: {% if stats.invoices_created > 0 %}{{ (stats.invoices_by_status.cancelled / stats.invoices_created * 100) }}%{% else %}0%{% endif %}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activité récente détaillée -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Devis récents détaillés -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Mes devis récents</h3>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        {% for quote in recent_quotes %}
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="p-2 rounded-full bg-blue-100 text-blue-600">
+                                        <i class="fas fa-file-alt text-sm"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">{{ quote.number }}</p>
+                                        <p class="text-xs text-gray-500">{{ quote.subject|slice(0, 30) }}{% if quote.subject|length > 30 %}...{% endif %}</p>
+                                        <p class="text-xs text-gray-500">{{ quote.customer.displayName }}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ quote.statusColor }}-100 text-{{ quote.statusColor }}-800">
+                                        {{ quote.statusLabel }}
+                                    </span>
+                                    <p class="text-xs text-gray-500 mt-1">{{ quote.formattedTotal }}</p>
+                                    <p class="text-xs text-gray-400">{{ quote.createdAt|date('d/m/Y') }}</p>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-gray-500 text-center py-8">Aucun devis récent</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Factures récentes détaillées -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Mes factures récentes</h3>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        {% for invoice in recent_invoices %}
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="p-2 rounded-full bg-green-100 text-green-600">
+                                        <i class="fas fa-receipt text-sm"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">{{ invoice.number }}</p>
+                                        <p class="text-xs text-gray-500">{{ invoice.subject|slice(0, 30) }}{% if invoice.subject|length > 30 %}...{% endif %}</p>
+                                        <p class="text-xs text-gray-500">{{ invoice.customer.displayName }}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ invoice.statusColor }}-100 text-{{ invoice.statusColor }}-800">
+                                        {{ invoice.statusLabel }}
+                                    </span>
+                                    <p class="text-xs text-gray-500 mt-1">{{ invoice.formattedTotal }}</p>
+                                    <p class="text-xs text-gray-400">{{ invoice.createdAt|date('d/m/Y') }}</p>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-gray-500 text-center py-8">Aucune facture récente</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions rapides -->
+        <div class="mt-8 bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Actions rapides</h3>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <a href="{{ path('app_quotes_new') }}" class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition duration-200">
+                        <div class="p-2 bg-blue-100 rounded-lg">
+                            <i class="fas fa-file-alt text-blue-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900">Nouveau devis</p>
+                            <p class="text-xs text-gray-500">Créer un devis</p>
+                        </div>
+                    </a>
+                    
+                    <a href="{{ path('app_invoices_new') }}" class="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition duration-200">
+                        <div class="p-2 bg-green-100 rounded-lg">
+                            <i class="fas fa-receipt text-green-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900">Nouvelle facture</p>
+                            <p class="text-xs text-gray-500">Créer une facture</p>
+                        </div>
+                    </a>
+                    
+                    <a href="{{ path('app_quotes') }}" class="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition duration-200">
+                        <div class="p-2 bg-purple-100 rounded-lg">
+                            <i class="fas fa-list text-purple-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900">Mes devis</p>
+                            <p class="text-xs text-gray-500">Voir tous mes devis</p>
+                        </div>
+                    </a>
+                    
+                    <a href="{{ path('app_invoices') }}" class="flex items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition duration-200">
+                        <div class="p-2 bg-orange-100 rounded-lg">
+                            <i class="fas fa-list text-orange-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900">Mes factures</p>
+                            <p class="text-xs text-gray-500">Voir toutes mes factures</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

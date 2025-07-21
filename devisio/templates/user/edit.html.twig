@@ -1,0 +1,302 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier mon profil - Devisio{% endblock %}
+{% block page_title %}Modifier mon profil{% endblock %}
+
+{% block header_actions %}
+    <div class="flex space-x-3">
+        <a href="{{ path('app_user_profile') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-200">
+            <i class="fas fa-times mr-2"></i>
+            Annuler
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-user-edit mr-2 text-primary-600"></i>
+                    Modifier mes informations
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">
+                    Mettez à jour vos informations personnelles et votre mot de passe.
+                </p>
+            </div>
+
+            {{ form_start(form, {'attr': {'class': 'p-6 space-y-6'}}) }}
+                
+                <!-- Informations personnelles -->
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            {{ form_label(form.firstName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.firstName, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            <div class="mt-1">
+                                {{ form_errors(form.firstName) }}
+                            </div>
+                        </div>
+
+                        <div>
+                            {{ form_label(form.lastName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.lastName, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            <div class="mt-1">
+                                {{ form_errors(form.lastName) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        {{ form_label(form.email, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.email, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                        <div class="mt-1">
+                            {{ form_errors(form.email) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Changement de mot de passe -->
+                <div class="pt-6 border-t border-gray-200">
+                    <h4 class="text-md font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-key mr-2 text-orange-600"></i>
+                        Changer le mot de passe
+                    </h4>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            {{ form_label(form.plainPassword.first, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.plainPassword.first, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            <div class="mt-1">
+                                {{ form_errors(form.plainPassword.first) }}
+                            </div>
+                            <div class="mt-1">
+                                {{ form_help(form.plainPassword) }}
+                            </div>
+                        </div>
+
+                        <div>
+                            {{ form_label(form.plainPassword.second, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.plainPassword.second, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            <div class="mt-1">
+                                {{ form_errors(form.plainPassword.second) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-info-circle text-yellow-600"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-yellow-800">
+                                    Conseils pour un mot de passe sécurisé
+                                </h3>
+                                <div class="mt-2 text-sm text-yellow-700">
+                                    <ul class="list-disc pl-5 space-y-1">
+                                        <li>Au moins 8 caractères</li>
+                                        <li>Mélangez lettres, chiffres et symboles</li>
+                                        <li>Évitez les informations personnelles</li>
+                                        <li>Utilisez un mot de passe unique pour chaque service</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations de l'entreprise (lecture seule) -->
+                <div class="pt-6 border-t border-gray-200">
+                    <h4 class="text-md font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-building mr-2 text-purple-600"></i>
+                        Informations de l'entreprise
+                    </h4>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Entreprise</p>
+                                <p class="text-sm text-gray-900">{{ user.company.name }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Rôle</p>
+                                <div class="flex flex-wrap gap-1 mt-1">
+                                    {% for role in user.roles %}
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
+                                            {% if role == 'ROLE_ADMIN' %}bg-red-100 text-red-800
+                                            {% elseif role == 'ROLE_COMPTABLE' %}bg-blue-100 text-blue-800
+                                            {% elseif role == 'ROLE_EMPLOYE' %}bg-green-100 text-green-800
+                                            {% else %}bg-gray-100 text-gray-800
+                                            {% endif %}">
+                                            {% if role == 'ROLE_ADMIN' %}Administrateur
+                                            {% elseif role == 'ROLE_COMPTABLE' %}Comptable
+                                            {% elseif role == 'ROLE_EMPLOYE' %}Employé
+                                            {% else %}{{ role }}
+                                            {% endif %}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-xs text-gray-500">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Pour modifier les informations de l'entreprise ou votre rôle, contactez un administrateur.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="pt-6 border-t border-gray-200">
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div class="text-sm text-gray-500">
+                            <i class="fas fa-calendar-alt mr-1"></i>
+                            Membre depuis le {{ user.createdAt|date('d/m/Y') }}
+                        </div>
+                        
+                        <div class="flex space-x-3">
+                            <a href="{{ path('app_user_profile') }}" class="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-200">
+                                <i class="fas fa-times mr-2"></i>
+                                Annuler
+                            </a>
+                            
+                            <button type="submit" class="bg-primary-600 text-white py-2 px-6 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition duration-200">
+                                <i class="fas fa-save mr-2"></i>
+                                Enregistrer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Confirmation avant de quitter si le formulaire a été modifié
+            let formChanged = false;
+            const form = document.querySelector('form');
+            
+            if (form) {
+                form.addEventListener('input', function() {
+                    formChanged = true;
+                });
+                
+                // Confirmation avant de naviguer ailleurs
+                window.addEventListener('beforeunload', function(e) {
+                    if (formChanged) {
+                        e.preventDefault();
+                        e.returnValue = 'Vous avez des modifications non sauvegardées. Voulez-vous vraiment quitter cette page ?';
+                        return e.returnValue;
+                    }
+                });
+                
+                // Ne pas confirmer lors de la soumission du formulaire
+                form.addEventListener('submit', function() {
+                    formChanged = false;
+                });
+                
+                // Ne pas confirmer lors du clic sur annuler
+                const cancelButton = document.querySelector('a[href="{{ path('app_user_profile') }}"]');
+                if (cancelButton) {
+                    cancelButton.addEventListener('click', function() {
+                        formChanged = false;
+                    });
+                }
+                
+                // Validation en temps réel du mot de passe
+                const password1 = form.querySelector('input[id$="_plainPassword_first"]');
+                const password2 = form.querySelector('input[id$="_plainPassword_second"]');
+                
+                if (password1 && password2) {
+                    function checkPasswordMatch() {
+                        if (password1.value && password2.value) {
+                            if (password1.value === password2.value) {
+                                password2.style.borderColor = '#10b981';
+                                password2.style.backgroundColor = '#f0fdf4';
+                                password2.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                            } else {
+                                password2.style.borderColor = '#ef4444';
+                                password2.style.backgroundColor = '#fef2f2';
+                                password2.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+                            }
+                        } else {
+                            password2.style.borderColor = '';
+                            password2.style.backgroundColor = '';
+                            password2.style.boxShadow = '';
+                        }
+                    }
+                    
+                    password1.addEventListener('input', checkPasswordMatch);
+                    password2.addEventListener('input', checkPasswordMatch);
+                    
+                    // Validation de la force du mot de passe
+                    password1.addEventListener('input', function() {
+                        const password = this.value;
+                        const strength = calculatePasswordStrength(password);
+                        showPasswordStrength(this, strength);
+                    });
+                }
+            }
+            
+            function calculatePasswordStrength(password) {
+                let score = 0;
+                
+                if (password.length >= 8) score += 1;
+                if (password.length >= 12) score += 1;
+                if (/[a-z]/.test(password)) score += 1;
+                if (/[A-Z]/.test(password)) score += 1;
+                if (/[0-9]/.test(password)) score += 1;
+                if (/[^A-Za-z0-9]/.test(password)) score += 1;
+                
+                return score;
+            }
+            
+            function showPasswordStrength(input, strength) {
+                // Supprimer l'ancien indicateur s'il existe
+                const existingIndicator = input.parentNode.querySelector('.password-strength');
+                if (existingIndicator) {
+                    existingIndicator.remove();
+                }
+                
+                if (input.value.length === 0) return;
+                
+                const indicator = document.createElement('div');
+                indicator.className = 'password-strength mt-2';
+                
+                let strengthText, strengthColor;
+                
+                if (strength <= 2) {
+                    strengthText = 'Mot de passe faible';
+                    strengthColor = 'text-red-600';
+                } else if (strength <= 4) {
+                    strengthText = 'Mot de passe moyen';
+                    strengthColor = 'text-yellow-600';
+                } else {
+                    strengthText = 'Mot de passe fort';
+                    strengthColor = 'text-green-600';
+                }
+                
+                indicator.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="flex space-x-1 mr-2">
+                            ${Array.from({length: 6}, (_, i) => `
+                                <div class="w-2 h-2 rounded-full ${i < strength ? 
+                                    (strength <= 2 ? 'bg-red-500' : strength <= 4 ? 'bg-yellow-500' : 'bg-green-500') : 
+                                    'bg-gray-300'
+                                }"></div>
+                            `).join('')}
+                        </div>
+                        <span class="text-xs font-medium ${strengthColor}">${strengthText}</span>
+                    </div>
+                `;
+                
+                input.parentNode.appendChild(indicator);
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,188 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvel utilisateur - Administration{% endblock %}
+{% block page_title %}Nouvel utilisateur{% endblock %}
+
+{% block header_actions %}
+    <div class="flex space-x-3">
+        <a href="{{ path('app_admin_users') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour à la liste
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-user-plus mr-2 text-primary-600"></i>
+                    Créer un nouvel utilisateur
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">
+                    Ajoutez un nouvel utilisateur à votre entreprise et définissez ses rôles.
+                </p>
+            </div>
+
+            {{ form_start(form, {'attr': {'class': 'p-6 space-y-6'}}) }}
+                
+                <!-- Informations personnelles -->
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            {{ form_label(form.firstName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.firstName, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.firstName) }}
+                        </div>
+
+                        <div>
+                            {{ form_label(form.lastName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.lastName, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.lastName) }}
+                        </div>
+                    </div>
+
+                    <div>
+                        {{ form_label(form.email, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.email, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                        {{ form_errors(form.email) }}
+                    </div>
+                </div>
+
+                <!-- Mot de passe (obligatoire pour nouveau) -->
+                <div class="pt-6 border-t border-gray-200">
+                    <h4 class="text-md font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-key mr-2 text-orange-600"></i>
+                        Mot de passe
+                    </h4>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            {{ form_label(form.plainPassword.first, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.plainPassword.first, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent', 'required': 'required'}}) }}
+                            {{ form_errors(form.plainPassword.first) }}
+                        </div>
+
+                        <div>
+                            {{ form_label(form.plainPassword.second, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.plainPassword.second, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent', 'required': 'required'}}) }}
+                            {{ form_errors(form.plainPassword.second) }}
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-info-circle text-yellow-600"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-yellow-800">
+                                    Conseils pour un mot de passe sécurisé
+                                </h3>
+                                <div class="mt-2 text-sm text-yellow-700">
+                                    <ul class="list-disc pl-5 space-y-1">
+                                        <li>Au moins 6 caractères (8 recommandés)</li>
+                                        <li>Mélangez lettres, chiffres et symboles</li>
+                                        <li>Évitez les informations personnelles</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rôles -->
+                <div class="pt-6 border-t border-gray-200">
+                    <h4 class="text-md font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-shield-alt mr-2 text-purple-600"></i>
+                        Rôles et permissions
+                    </h4>
+                    
+                    <div>
+                        {{ form_label(form.roles, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-3'}}) }}
+                        <div class="space-y-3">
+                            {{ form_widget(form.roles) }}
+                        </div>
+                        {{ form_errors(form.roles) }}
+                    </div>
+
+                    <!-- Explication des rôles -->
+                    <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h5 class="text-sm font-medium text-blue-800 mb-2">Description des rôles :</h5>
+                        <div class="text-sm text-blue-700 space-y-1">
+                            <div><strong>Employé :</strong> Peut créer et gérer ses propres devis et factures</div>
+                            <div><strong>Comptable :</strong> + Accès aux statistiques et rapports financiers</div>
+                            <div><strong>Administrateur :</strong> + Gestion complète des utilisateurs et paramètres</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statut (actif par défaut) -->
+                <div class="pt-6 border-t border-gray-200">
+                    <div class="flex items-center">
+                        {{ form_widget(form.isActive, {'attr': {'class': 'h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded'}}) }}
+                        <div class="ml-3">
+                            {{ form_label(form.isActive, null, {'label_attr': {'class': 'text-sm font-medium text-gray-700'}}) }}
+                            <p class="text-xs text-gray-500">L'utilisateur pourra se connecter immédiatement</p>
+                        </div>
+                    </div>
+                    {{ form_errors(form.isActive) }}
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="pt-6 border-t border-gray-200">
+                    <div class="flex justify-end space-x-3">
+                        <a href="{{ path('app_admin_users') }}" class="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-200">
+                            <i class="fas fa-times mr-2"></i>
+                            Annuler
+                        </a>
+                        
+                        <button type="submit" class="bg-primary-600 text-white py-2 px-6 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition duration-200">
+                            <i class="fas fa-plus mr-2"></i>
+                            Créer l'utilisateur
+                        </button>
+                    </div>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Validation du mot de passe en temps réel
+            const password1 = document.querySelector('input[id$="_plainPassword_first"]');
+            const password2 = document.querySelector('input[id$="_plainPassword_second"]');
+            
+            if (password1 && password2) {
+                function checkPasswordMatch() {
+                    if (password1.value && password2.value) {
+                        if (password1.value === password2.value) {
+                            password2.style.borderColor = '#10b981';
+                            password2.style.backgroundColor = '#f0fdf4';
+                        } else {
+                            password2.style.borderColor = '#ef4444';
+                            password2.style.backgroundColor = '#fef2f2';
+                        }
+                    } else {
+                        password2.style.borderColor = '';
+                        password2.style.backgroundColor = '';
+                    }
+                }
+                
+                password1.addEventListener('input', checkPasswordMatch);
+                password2.addEventListener('input', checkPasswordMatch);
+            }
+
+            // Sélection automatique du rôle Employé par défaut
+            const employeRole = document.querySelector('input[value="ROLE_EMPLOYE"]');
+            if (employeRole && !employeRole.checked) {
+                employeRole.checked = true;
+            }
+        });
+    </script>
+{% endblock %}

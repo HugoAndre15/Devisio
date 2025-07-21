@@ -1,0 +1,290 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier {{ user.fullName }} - Administration{% endblock %}
+{% block page_title %}Modifier l'utilisateur{% endblock %}
+
+{% block header_actions %}
+    <div class="flex space-x-3">
+        <a href="{{ path('app_admin_users_show', {id: user.id}) }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200">
+            <i class="fas fa-eye mr-2"></i>
+            Voir le profil
+        </a>
+        <a href="{{ path('app_admin_users') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour à la liste
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 h-12 w-12">
+                        <div class="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center">
+                            <span class="text-primary-600 font-medium text-lg">
+                                {{ user.firstName|first }}{{ user.lastName|first }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            Modifier {{ user.fullName }}
+                        </h3>
+                        <p class="text-sm text-gray-600">
+                            {{ user.email }} • Membre depuis le {{ user.createdAt|date('d/m/Y') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {{ form_start(form, {'attr': {'class': 'p-6 space-y-6'}}) }}
+                
+                <!-- Informations personnelles -->
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            {{ form_label(form.firstName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.firstName, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.firstName) }}
+                        </div>
+
+                        <div>
+                            {{ form_label(form.lastName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.lastName, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.lastName) }}
+                        </div>
+                    </div>
+
+                    <div>
+                        {{ form_label(form.email, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.email, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                        {{ form_errors(form.email) }}
+                    </div>
+                </div>
+
+                <!-- Changement de mot de passe (optionnel) -->
+                <div class="pt-6 border-t border-gray-200">
+                    <h4 class="text-md font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-key mr-2 text-orange-600"></i>
+                        Changer le mot de passe
+                    </h4>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            {{ form_label(form.plainPassword.first, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.plainPassword.first, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.plainPassword.first) }}
+                        </div>
+
+                        <div>
+                            {{ form_label(form.plainPassword.second, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.plainPassword.second, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
+                            {{ form_errors(form.plainPassword.second) }}
+                        </div>
+                    </div>
+
+                    <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p class="text-sm text-blue-700">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Laissez vide si vous ne souhaitez pas changer le mot de passe.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Rôles actuels -->
+                <div class="pt-6 border-t border-gray-200">
+                    <h4 class="text-md font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-shield-alt mr-2 text-purple-600"></i>
+                        Rôles et permissions
+                    </h4>
+                    
+                    <!-- Rôles actuels en lecture -->
+                    <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+                        <p class="text-sm font-medium text-gray-600 mb-2">Rôles actuels :</p>
+                        <div class="flex flex-wrap gap-2">
+                            {% for role in user.roles %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                    {% if role == 'ROLE_ADMIN' %}bg-red-100 text-red-800
+                                    {% elseif role == 'ROLE_COMPTABLE' %}bg-blue-100 text-blue-800
+                                    {% elseif role == 'ROLE_EMPLOYE' %}bg-green-100 text-green-800
+                                    {% else %}bg-gray-100 text-gray-800
+                                    {% endif %}">
+                                    {% if role == 'ROLE_ADMIN' %}
+                                        <i class="fas fa-crown mr-1"></i>Administrateur
+                                    {% elseif role == 'ROLE_COMPTABLE' %}
+                                        <i class="fas fa-calculator mr-1"></i>Comptable
+                                    {% elseif role == 'ROLE_EMPLOYE' %}
+                                        <i class="fas fa-user-tie mr-1"></i>Employé
+                                    {% else %}
+                                        {{ role }}
+                                    {% endif %}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Modification des rôles -->
+                    <div>
+                        {{ form_label(form.roles, 'Modifier les rôles :', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-3'}}) }}
+                        <div class="space-y-3">
+                            {{ form_widget(form.roles) }}
+                        </div>
+                        {{ form_errors(form.roles) }}
+                    </div>
+
+                    {% if user.hasRole('ROLE_ADMIN') %}
+                        <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-exclamation-triangle text-red-600"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-red-800">
+                                        Attention - Utilisateur administrateur
+                                    </h3>
+                                    <div class="mt-2 text-sm text-red-700">
+                                        <p>Cet utilisateur est administrateur. Assurez-vous qu'il garde au moins le rôle Employé et qu'il reste au moins un autre administrateur actif.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Statut -->
+                <div class="pt-6 border-t border-gray-200">
+                    <h4 class="text-md font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-toggle-on mr-2 text-green-600"></i>
+                        Statut du compte
+                    </h4>
+                    
+                    <div class="flex items-center">
+                        {{ form_widget(form.isActive, {'attr': {'class': 'h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded'}}) }}
+                        <div class="ml-3">
+                            {{ form_label(form.isActive, null, {'label_attr': {'class': 'text-sm font-medium text-gray-700'}}) }}
+                            <p class="text-xs text-gray-500">
+                                {% if user.isActive %}
+                                    L'utilisateur peut actuellement se connecter
+                                {% else %}
+                                    L'utilisateur ne peut pas se connecter
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {{ form_errors(form.isActive) }}
+                </div>
+
+                <!-- Statistiques de l'utilisateur -->
+                <div class="pt-6 border-t border-gray-200">
+                    <h4 class="text-md font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-chart-bar mr-2 text-blue-600"></i>
+                        Activité de l'utilisateur
+                    </h4>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="text-center p-3 bg-blue-50 rounded-lg">
+                            <div class="text-2xl font-bold text-blue-600">{{ user.quotes|length }}</div>
+                            <div class="text-xs text-blue-700">Devis créés</div>
+                        </div>
+                        <div class="text-center p-3 bg-green-50 rounded-lg">
+                            <div class="text-2xl font-bold text-green-600">{{ user.invoices|length }}</div>
+                            <div class="text-xs text-green-700">Factures créées</div>
+                        </div>
+                        <div class="text-center p-3 bg-purple-50 rounded-lg">
+                            <div class="text-2xl font-bold text-purple-600">
+                                {% set total_ca = 0 %}
+                                {% for invoice in user.invoices %}
+                                    {% if invoice.status == 'paid' %}
+                                        {% set total_ca = total_ca + invoice.total %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ (total_ca / 1000)|number_format(0) }}k€
+                            </div>
+                            <div class="text-xs text-purple-700">CA généré</div>
+                        </div>
+                        <div class="text-center p-3 bg-orange-50 rounded-lg">
+                            <div class="text-2xl font-bold text-orange-600">
+                                {% if user.quotes|length > 0 %}
+                                    {{ ((user.invoices|length / user.quotes|length) * 100)|number_format(0) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </div>
+                            <div class="text-xs text-orange-700">Taux conversion</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="pt-6 border-t border-gray-200">
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div class="text-sm text-gray-500">
+                            <i class="fas fa-calendar-alt mr-1"></i>
+                            Dernière modification le {{ user.updatedAt|date('d/m/Y à H:i') }}
+                        </div>
+                        
+                        <div class="flex space-x-3">
+                            <a href="{{ path('app_admin_users') }}" class="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-200">
+                                <i class="fas fa-times mr-2"></i>
+                                Annuler
+                            </a>
+                            
+                            <button type="submit" class="bg-primary-600 text-white py-2 px-6 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition duration-200">
+                                <i class="fas fa-save mr-2"></i>
+                                Enregistrer les modifications
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Validation du mot de passe en temps réel
+            const password1 = document.querySelector('input[id$="_plainPassword_first"]');
+            const password2 = document.querySelector('input[id$="_plainPassword_second"]');
+            
+            if (password1 && password2) {
+                function checkPasswordMatch() {
+                    if (password1.value && password2.value) {
+                        if (password1.value === password2.value) {
+                            password2.style.borderColor = '#10b981';
+                            password2.style.backgroundColor = '#f0fdf4';
+                        } else {
+                            password2.style.borderColor = '#ef4444';
+                            password2.style.backgroundColor = '#fef2f2';
+                        }
+                    } else {
+                        password2.style.borderColor = '';
+                        password2.style.backgroundColor = '';
+                    }
+                }
+                
+                password1.addEventListener('input', checkPasswordMatch);
+                password2.addEventListener('input', checkPasswordMatch);
+            }
+
+            // Confirmation pour les modifications sensibles d'admin
+            const isAdmin = {{ user.hasRole('ROLE_ADMIN') ? 'true' : 'false' }};
+            const adminCheckbox = document.querySelector('input[value="ROLE_ADMIN"]');
+            
+            if (isAdmin && adminCheckbox) {
+                adminCheckbox.addEventListener('change', function() {
+                    if (!this.checked) {
+                        if (!confirm('Êtes-vous sûr de vouloir retirer les droits administrateur à cet utilisateur ?')) {
+                            this.checked = true;
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}
