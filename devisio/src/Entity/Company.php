@@ -88,6 +88,9 @@ class Company
     #[ORM\OneToMany(mappedBy: 'company', targetEntity: Season::class)]
     private Collection $seasons;
 
+    #[ORM\OneToMany(mappedBy: 'company', targetEntity: DiscountCode::class)]
+    private Collection $discountCodes;
+
     public function __construct()
     {
         $this->users = new ArrayCollection();

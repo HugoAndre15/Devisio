@@ -1,0 +1,343 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ season.name }} - Saisons - Devisio{% endblock %}
+{% block page_title %}{{ season.name }}{% endblock %}
+
+{% block header_actions %}
+    <div class="flex space-x-3">
+        <a href="{{ path('app_admin_seasons_edit', { 'id': season.id }) }}" 
+           class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center">
+            <i class="fas fa-edit mr-2"></i>
+            Modifier
+        </a>
+        
+        <form method="post" action="{{ path('app_admin_seasons_toggle_status', { 'id': season.id }) }}" class="inline">
+            <input type="hidden" name="_token" value="{{ csrf_token('toggle_status' ~ season.id) }}">
+            <button type="submit" 
+                    onclick="return confirm('Êtes-vous sûr de vouloir {{ season.isActive ? 'désactiver' : 'activer' }} cette saison ?')"
+                    class="{% if season.isActive %}bg-red-600 hover:bg-red-700{% else %}bg-green-600 hover:bg-green-700{% endif %} text-white px-4 py-2 rounded-lg inline-flex items-center">
+                {% if season.isActive %}
+                    <i class="fas fa-pause mr-2"></i>Désactiver
+                {% else %}
+                    <i class="fas fa-play mr-2"></i>Activer
+                {% endif %}
+            </button>
+        </form>
+        
+        <a href="{{ path('app_admin_seasons') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg inline-flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <!-- Informations de la saison -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Détails -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Détails de la saison</h3>
+            
+            <dl class="space-y-3">
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Période</dt>
+                    <dd class="text-sm text-gray-900">
+                        {{ season.startDate|date('d/m/Y') }} - {{ season.endDate|date('d/m/Y') }}
+                    </dd>
+                </div>
+                
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Multiplicateur</dt>
+                    <dd class="text-sm text-gray-900">
+                        <span class="font-semibold">x{{ season.multiplier }}</span>
+                        {% if season.multiplier > 1 %}
+                            <span class="text-green-600 ml-2">(+{{ ((season.multiplier - 1) * 100)|number_format(0) }}%)</span>
+                        {% elseif season.multiplier < 1 %}
+                            <span class="text-red-600 ml-2">({{ ((season.multiplier - 1) * 100)|number_format(0) }}%)</span>
+                        {% endif %}
+                    </dd>
+                </div>
+                
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Statut</dt>
+                    <dd class="text-sm">
+                        {% if season.isActive %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                Active
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                <i class="fas fa-pause-circle mr-1"></i>
+                                Inactive
+                            </span>
+                        {% endif %}
+                    </dd>
+                </div>
+                
+                {% if stats.is_current %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Période actuelle</dt>
+                        <dd class="text-sm text-green-600 font-medium">
+                            <i class="fas fa-star mr-1"></i>
+                            Cette saison est actuellement active
+                        </dd>
+                    </div>
+                {% endif %}
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Créée le</dt>
+                    <dd class="text-sm text-gray-900">{{ season.createdAt|date('d/m/Y à H:i') }}</dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Dernière modification</dt>
+                    <dd class="text-sm text-gray-900">{{ season.updatedAt|date('d/m/Y à H:i') }}</dd>
+                </div>
+            </dl>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Statistiques</h3>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                    <div class="text-2xl font-bold text-blue-600">{{ stats.total_products }}</div>
+                    <div class="text-sm text-gray-600">Produits</div>
+                </div>
+                
+                <div class="text-center p-4 bg-green-50 rounded-lg">
+                    <div class="text-2xl font-bold text-green-600">{{ stats.products_with_special_price }}</div>
+                    <div class="text-sm text-gray-600">Tarifs spéciaux</div>
+                </div>
+            </div>
+            
+            {% if stats.days_remaining is not null %}
+                <div class="mt-4 p-3 {{ stats.days_remaining > 0 ? 'bg-yellow-50 border-yellow-200 text-yellow-800' : 'bg-gray-50 border-gray-200 text-gray-800' }} border rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-clock mr-2"></i>
+                        <div class="text-sm">
+                            {% if stats.days_remaining > 0 %}
+                                Cette saison se termine dans {{ stats.days_remaining }} jours
+                            {% elseif stats.days_remaining == 0 %}
+                                Cette saison se termine aujourd'hui
+                            {% else %}
+                                Cette saison est terminée depuis {{ stats.days_remaining|abs }} jours
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Tarifs des produits -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-900">Tarifs pour cette saison</h3>
+                <button type="button" id="edit-prices-btn" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm">
+                    <i class="fas fa-edit mr-2"></i>Modifier les tarifs
+                </button>
+            </div>
+        </div>
+        
+        <form method="post" action="{{ path('app_admin_seasons_set_prices', { 'id': season.id }) }}" id="prices-form" style="display: none;">
+            <input type="hidden" name="_token" value="{{ csrf_token('set_prices' ~ season.id) }}">
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Produit
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Prix de base
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Prix avec multiplicateur
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Prix personnalisé
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for product in products %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>
+                                    <div class="text-sm text-gray-500">{{ product.typeLabel }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ product.price|number_format(2, ',', ' ') }} € / {{ product.unit }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {% set multiplied_price = (product.price * season.multiplier) %}
+                                    {{ multiplied_price|number_format(2, ',', ' ') }} €
+                                    {% if season.multiplier != 1 %}
+                                        {% if season.multiplier > 1 %}
+                                            <span class="text-green-600">(+{{ ((season.multiplier - 1) * 100)|number_format(0) }}%)</span>
+                                        {% else %}
+                                            <span class="text-red-600">({{ ((season.multiplier - 1) * 100)|number_format(0) }}%)</span>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {% set custom_price = null %}
+                                    {% for price in product.prices %}
+                                        {% if price.season.id == season.id %}
+                                            {% set custom_price = price.price %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    <input type="number" 
+                                           name="prices[{{ product.id }}][price]" 
+                                           value="{{ custom_price ?: (product.price * season.multiplier) }}"
+                                           step="0.01" 
+                                           min="0"
+                                           class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                           placeholder="Prix personnalisé">
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        Laisser 0 pour utiliser le multiplicateur
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                                    Aucun produit trouvé.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
+                <button type="button" id="cancel-prices-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg text-sm">
+                    Annuler
+                </button>
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm">
+                    <i class="fas fa-save mr-2"></i>Enregistrer les tarifs
+                </button>
+            </div>
+        </form>
+        
+        <!-- Vue en lecture seule -->
+        <div id="prices-readonly" class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Produit
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Prix de base
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Prix appliqué
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Type de tarif
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for product in products %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>
+                                <div class="text-sm text-gray-500">{{ product.typeLabel }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ product.price|number_format(2, ',', ' ') }} € / {{ product.unit }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% set custom_price = null %}
+                                {% for price in product.prices %}
+                                    {% if price.season.id == season.id %}
+                                        {% set custom_price = price.price %}
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if custom_price %}
+                                    <span class="text-sm font-medium text-green-600">
+                                        {{ custom_price|number_format(2, ',', ' ') }} €
+                                    </span>
+                                {% else %}
+                                    {% set multiplied_price = (product.price * season.multiplier) %}
+                                    <span class="text-sm text-gray-900">
+                                        {{ multiplied_price|number_format(2, ',', ' ') }} €
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                {% if custom_price %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-star mr-1"></i>Prix personnalisé
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        <i class="fas fa-percentage mr-1"></i>Multiplicateur (x{{ season.multiplier }})
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if season.productPrices|length > 0 %}
+        <!-- Actions de suppression -->
+        <div class="mt-6 bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 text-red-600">Zone de danger</h3>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="text-sm font-medium text-gray-900">Supprimer cette saison</h4>
+                    <p class="text-sm text-gray-500">Cette action est irréversible et supprimera tous les tarifs associés.</p>
+                </div>
+                <form method="post" action="{{ path('app_admin_seasons_delete', { 'id': season.id }) }}" class="inline">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ season.id) }}">
+                    <button type="submit" 
+                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette saison ? Cette action est irréversible.')"
+                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm">
+                        <i class="fas fa-trash mr-2"></i>Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const editBtn = document.getElementById('edit-prices-btn');
+            const cancelBtn = document.getElementById('cancel-prices-btn');
+            const form = document.getElementById('prices-form');
+            const readonly = document.getElementById('prices-readonly');
+
+            if (editBtn) {
+                editBtn.addEventListener('click', function() {
+                    readonly.style.display = 'none';
+                    form.style.display = 'block';
+                    this.style.display = 'none';
+                });
+            }
+
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', function() {
+                    form.style.display = 'none';
+                    readonly.style.display = 'block';
+                    editBtn.style.display = 'inline-block';
+                });
+            }
+        });
+    </script>
+{% endblock %}

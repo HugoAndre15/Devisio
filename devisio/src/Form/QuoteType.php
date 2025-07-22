@@ -4,6 +4,8 @@ namespace App\Form;
 
 use App\Entity\Quote;
 use App\Entity\Customer;
+use App\Entity\DiscountCode;
+use App\Repository\DiscountCodeRepository;
 use App\Repository\CustomerRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -104,6 +106,17 @@ class QuoteType extends AbstractType
                     'rows' => 3,
                     'placeholder' => 'Notes internes'
                 ]
+            ])
+            ->add('discountCodeInput', TextType::class, [
+                'label' => 'Code de réduction',
+                'mapped' => false,
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Entrez un code de réduction',
+                    'id' => 'discount-code-input'
+                ],
+                'help' => 'Code optionnel pour appliquer une réduction'
             ]);
     }
 
