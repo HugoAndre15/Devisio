@@ -1,0 +1,285 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier {{ season.name }} - Devisio{% endblock %}
+{% block page_title %}Modifier la saison "{{ season.name }}"{% endblock %}
+
+{% block header_actions %}
+    <div class="flex space-x-3">
+        <a href="{{ path('app_admin_seasons_show', { 'id': season.id }) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg inline-flex items-center">
+            <i class="fas fa-eye mr-2"></i>
+            Voir la saison
+        </a>
+        
+        <a href="{{ path('app_admin_seasons') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg inline-flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour aux saisons
+        </a>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .form-control {
+            @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+        }
+        
+        .form-checkbox {
+            @apply h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded;
+        }
+        
+        .alert {
+            @apply rounded-lg p-4 mb-6;
+        }
+        
+        .alert-warning {
+            @apply bg-yellow-50 border border-yellow-200;
+        }
+        
+        .alert-info {
+            @apply bg-blue-50 border border-blue-200;
+        }
+        
+        .alert-icon {
+            @apply mr-3 mt-0.5;
+        }
+        
+        .alert-icon-warning {
+            @apply text-yellow-500;
+        }
+        
+        .alert-icon-info {
+            @apply text-blue-500;
+        }
+        
+        .alert-title {
+            @apply text-sm font-medium;
+        }
+        
+        .alert-title-warning {
+            @apply text-yellow-800;
+        }
+        
+        .alert-title-info {
+            @apply text-blue-800;
+        }
+        
+        .alert-content {
+            @apply mt-1 text-sm;
+        }
+        
+        .alert-content-warning {
+            @apply text-yellow-700;
+        }
+        
+        .alert-content-info {
+            @apply text-blue-700;
+        }
+        
+        .form-error {
+            @apply text-red-600 text-sm mt-1;
+        }
+        
+        .form-help {
+            @apply text-gray-500 text-sm mt-1;
+        }
+        
+        .product-price-card {
+            @apply flex items-center justify-between p-3 bg-gray-50 rounded-lg;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="max-w-2xl mx-auto">
+        <!-- Avertissement si la saison est actuellement active -->
+        {% if season.isCurrentlyActive %}
+            <div class="alert alert-warning">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-triangle alert-icon alert-icon-warning"></i>
+                    <div>
+                        <h3 class="alert-title alert-title-warning">Saison actuellement active</h3>
+                        <div class="alert-content alert-content-warning">
+                            <p>Cette saison est actuellement en cours. Les modifications s'appliqueront immédiatement aux nouveaux devis.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Informations sur la modification -->
+        <div class="alert alert-info">
+            <div class="flex items-start">
+                <i class="fas fa-info-circle alert-icon alert-icon-info"></i>
+                <div>
+                    <h3 class="alert-title alert-title-info">Modification d'une saison</h3>
+                    <div class="alert-content alert-content-info">
+                        <p>La modification du multiplicateur recalculera automatiquement les prix des produits n'ayant pas de tarif personnalisé.</p>
+                        {% if season.productPrices|length > 0 %}
+                            <p class="mt-1"><strong>{{ season.productPrices|length }}</strong> produits ont des tarifs personnalisés pour cette saison.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Modifier les informations</h3>
+                <p class="mt-1 text-sm text-gray-500">
+                    Créée le {{ season.createdAt|date('d/m/Y à H:i') }}
+                    {% if season.createdAt != season.updatedAt %}
+                        • Modifiée le {{ season.updatedAt|date('d/m/Y à H:i') }}
+                    {% endif %}
+                </p>
+            </div>
+
+            {{ form_start(form, {'attr': {'class': 'px-6 py-6 space-y-6'}}) }}
+                
+                <!-- Nom de la saison -->
+                <div>
+                    {{ form_label(form.name, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                    {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+                    {% if form.name.vars.help %}
+                        <p class="form-help">{{ form.name.vars.help }}</p>
+                    {% endif %}
+                    {{ form_errors(form.name) }}
+                </div>
+
+                <!-- Période -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        {{ form_label(form.startDate, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
+                        {% if form.startDate.vars.help %}
+                            <p class="form-help">{{ form.startDate.vars.help }}</p>
+                        {% endif %}
+                        {{ form_errors(form.startDate) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.endDate, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.endDate, {'attr': {'class': 'form-control'}}) }}
+                        {% if form.endDate.vars.help %}
+                            <p class="form-help">{{ form.endDate.vars.help }}</p>
+                        {% endif %}
+                        {{ form_errors(form.endDate) }}
+                    </div>
+                </div>
+
+                <!-- Multiplicateur -->
+                <div>
+                    {{ form_label(form.multiplier, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                    <div class="relative">
+                        {{ form_widget(form.multiplier, {'attr': {'class': 'form-control', 'id': 'multiplier-input'}}) }}
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm" id="multiplier-percentage"></span>
+                        </div>
+                    </div>
+                    {% if form.multiplier.vars.help %}
+                        <p class="form-help">{{ form.multiplier.vars.help }}</p>
+                    {% endif %}
+                    {{ form_errors(form.multiplier) }}
+                    
+                    {% if season.productPrices|length > 0 %}
+                        <div class="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <p class="text-sm text-yellow-800">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                Cette saison a {{ season.productPrices|length }} tarifs personnalisés qui ne seront pas affectés par le changement de multiplicateur.
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Statut actif -->
+                <div class="flex items-center">
+                    {{ form_widget(form.isActive, {'attr': {'class': 'form-checkbox'}}) }}
+                    <div class="ml-3">
+                        {{ form_label(form.isActive, null, {'label_attr': {'class': 'text-sm font-medium text-gray-700'}}) }}
+                        {% if form.isActive.vars.help %}
+                            <p class="form-help">{{ form.isActive.vars.help }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex justify-between items-center pt-6 border-t border-gray-200">
+                    <a href="{{ path('app_admin_seasons_show', { 'id': season.id }) }}" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-3 rounded-lg inline-flex items-center transition-colors">
+                        <i class="fas fa-times mr-2"></i>
+                        Annuler
+                    </a>
+                    
+                    <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg inline-flex items-center transition-colors">
+                        <i class="fas fa-save mr-2"></i>
+                        Enregistrer les modifications
+                    </button>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+
+        <!-- Tarifs personnalisés existants -->
+        {% if season.productPrices|length > 0 %}
+            <div class="mt-6 bg-white shadow rounded-lg">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Tarifs personnalisés existants</h3>
+                    <p class="mt-1 text-sm text-gray-500">Ces produits ont des prix spécifiques pour cette saison</p>
+                </div>
+                
+                <div class="px-6 py-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {% for productPrice in season.productPrices %}
+                            <div class="product-price-card">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">{{ productPrice.product.name }}</div>
+                                    <div class="text-sm text-gray-500">{{ productPrice.product.typeLabel }}</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm font-medium text-green-600">{{ productPrice.price|number_format(2, ',', ' ') }} €</div>
+                                    <div class="text-xs text-gray-400">vs {{ productPrice.product.price|number_format(2, ',', ' ') }} € de base</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <a href="{{ path('app_admin_seasons_show', { 'id': season.id }) }}" class="text-primary-600 hover:text-primary-900 text-sm font-medium">
+                            Voir et modifier tous les tarifs →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const multiplierInput = document.getElementById('multiplier-input');
+            const percentageSpan = document.getElementById('multiplier-percentage');
+            
+            function updatePercentage() {
+                const value = parseFloat(multiplierInput.value) || 1;
+                const percentage = ((value - 1) * 100);
+                
+                if (percentage > 0) {
+                    percentageSpan.textContent = `+${percentage.toFixed(0)}%`;
+                    percentageSpan.className = 'text-green-600 sm:text-sm font-medium';
+                } else if (percentage < 0) {
+                    percentageSpan.textContent = `${percentage.toFixed(0)}%`;
+                    percentageSpan.className = 'text-red-600 sm:text-sm font-medium';
+                } else {
+                    percentageSpan.textContent = 'Prix normal';
+                    percentageSpan.className = 'text-gray-500 sm:text-sm';
+                }
+            }
+            
+            if (multiplierInput) {
+                multiplierInput.addEventListener('input', updatePercentage);
+                updatePercentage(); // Initial call
+            }
+        });
+    </script>
+{% endblock %}

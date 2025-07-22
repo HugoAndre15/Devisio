@@ -1,0 +1,202 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau code de réduction - Devisio{% endblock %}
+{% block page_title %}Créer un nouveau code de réduction{% endblock %}
+
+{% block header_actions %}
+    <a href="{{ path('app_admin_discount_codes') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg inline-flex items-center">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Retour aux codes
+    </a>
+{% endblock %}
+
+{% block body %}
+    <div class="max-w-3xl mx-auto">
+        <!-- Informations sur la création d'un code -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div class="flex items-start">
+                <i class="fas fa-info-circle text-blue-500 mr-3 mt-0.5"></i>
+                <div>
+                    <h3 class="text-sm font-medium text-blue-800">À propos des codes de réduction</h3>
+                    <div class="mt-1 text-sm text-blue-700">
+                        <p>Les codes de réduction permettent d'offrir des avantages à vos clients sur les devis et factures.</p>
+                        <ul class="mt-2 list-disc list-inside space-y-1">
+                            <li>Types : <strong>pourcentage</strong> (ex: 10%) ou <strong>montant fixe</strong> (ex: 50€)</li>
+                            <li>Conditions : montant minimum, limite d'utilisation, période de validité</li>
+                            <li>Les clients saisissent le code lors de la création du devis</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Informations du code</h3>
+            </div>
+
+            {{ form_start(form, {'attr': {'class': 'px-6 py-6 space-y-6'}}) }}
+                
+                <!-- Code et nom -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        {{ form_label(form.code, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        <div class="flex space-x-2">
+                            {{ form_widget(form.code, {'attr': {'style': 'text-transform: uppercase;'}}) }}
+                            <button type="button" id="generate-code-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm">
+                                <i class="fas fa-random"></i>
+                            </button>
+                        </div>
+                        {{ form_help(form.code) }}
+                        {{ form_errors(form.code) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.name, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.name) }}
+                        {{ form_help(form.name) }}
+                        {{ form_errors(form.name) }}
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    {{ form_label(form.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                    {{ form_widget(form.description) }}
+                    {{ form_help(form.description) }}
+                    {{ form_errors(form.description) }}
+                </div>
+
+                <!-- Type et valeur -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        {{ form_label(form.type, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.type, {'attr': {'id': 'discount-type'}}) }}
+                        {{ form_help(form.type) }}
+                        {{ form_errors(form.type) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.value, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        <div class="relative">
+                            {{ form_widget(form.value, {'attr': {'id': 'discount-value'}}) }}
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm" id="value-unit">€</span>
+                            </div>
+                        </div>
+                        {{ form_help(form.value) }}
+                        {{ form_errors(form.value) }}
+                        <div class="mt-2 p-3 bg-gray-50 rounded-lg">
+                            <div class="text-sm text-gray-700">
+                                <div id="value-examples">
+                                    <p class="font-medium mb-1">Exemples :</p>
+                                    <ul class="space-y-1 text-sm">
+                                        <li id="example-percentage" style="display: none;"><code>10</code> → 10% de réduction</li>
+                                        <li id="example-fixed" style="display: none;"><code>50</code> → 50€ de réduction</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conditions -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h4 class="text-md font-medium text-gray-900 mb-4">Conditions d'utilisation</h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            {{ form_label(form.validUntil, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.validUntil) }}
+                            {{ form_help(form.validUntil) }}
+                            {{ form_errors(form.validUntil) }}
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        {{ form_label(form.usageLimit, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.usageLimit) }}
+                        {{ form_help(form.usageLimit) }}
+                        {{ form_errors(form.usageLimit) }}
+                    </div>
+                </div>
+
+                <!-- Statut actif -->
+                <div class="border-t border-gray-200 pt-6">
+                    <div class="flex items-center">
+                        {{ form_widget(form.isActive, {'attr': {'class': 'form-checkbox'}}) }}
+                        <div class="ml-3">
+                            {{ form_label(form.isActive, null, {'label_attr': {'class': 'text-sm font-medium text-gray-700'}}) }}
+                            {{ form_help(form.isActive) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex justify-between items-center pt-6 border-t border-gray-200">
+                    <a href="{{ path('app_admin_discount_codes') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-3 rounded-lg inline-flex items-center">
+                        <i class="fas fa-times mr-2"></i>
+                        Annuler
+                    </a>
+                    
+                    <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg inline-flex items-center">
+                        <i class="fas fa-save mr-2"></i>
+                        Créer le code
+                    </button>
+                </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const typeSelect = document.getElementById('discount-type');
+            const valueUnit = document.getElementById('value-unit');
+            const maxDiscountField = document.getElementById('maximum-discount-field');
+            const examplePercentage = document.getElementById('example-percentage');
+            const exampleFixed = document.getElementById('example-fixed');
+            const generateBtn = document.getElementById('generate-code-btn');
+            const codeInput = document.querySelector('#discount_code_code');
+            
+            function updateValueDisplay() {
+                const type = typeSelect.value;
+                
+                if (type === 'percentage') {
+                    valueUnit.textContent = '%';
+                    maxDiscountField.style.display = 'block';
+                    examplePercentage.style.display = 'list-item';
+                    exampleFixed.style.display = 'none';
+                } else {
+                    valueUnit.textContent = '€';
+                    maxDiscountField.style.display = 'none';
+                    examplePercentage.style.display = 'none';
+                    exampleFixed.style.display = 'list-item';
+                }
+            }
+            
+            typeSelect.addEventListener('change', updateValueDisplay);
+            updateValueDisplay(); // Initial call
+            
+            // Générer un code aléatoire
+            generateBtn.addEventListener('click', function() {
+                fetch('{{ path('app_admin_discount_codes_generate') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code) {
+                        codeInput.value = data.code;
+                    }
+                })
+                .catch(error => console.error('Erreur:', error));
+            });
+        });
+    </script>
+{% endblock %}
