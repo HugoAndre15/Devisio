@@ -1,148 +1,233 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Nouveau code de réduction - Devisio{% endblock %}
-{% block page_title %}Créer un nouveau code de réduction{% endblock %}
+{% block title %}Nouveau code de réduction - Administration - Devisio{% endblock %}
+{% block page_title %}Nouveau code de réduction{% endblock %}
 
 {% block header_actions %}
     <a href="{{ path('app_admin_discount_codes') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg inline-flex items-center">
         <i class="fas fa-arrow-left mr-2"></i>
-        Retour aux codes
+        Retour à la liste
     </a>
 {% endblock %}
 
 {% block body %}
     <div class="max-w-3xl mx-auto">
-        <!-- Informations sur la création d'un code -->
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <div class="flex items-start">
-                <i class="fas fa-info-circle text-blue-500 mr-3 mt-0.5"></i>
-                <div>
-                    <h3 class="text-sm font-medium text-blue-800">À propos des codes de réduction</h3>
-                    <div class="mt-1 text-sm text-blue-700">
-                        <p>Les codes de réduction permettent d'offrir des avantages à vos clients sur les devis et factures.</p>
-                        <ul class="mt-2 list-disc list-inside space-y-1">
-                            <li>Types : <strong>pourcentage</strong> (ex: 10%) ou <strong>montant fixe</strong> (ex: 50€)</li>
-                            <li>Conditions : montant minimum, limite d'utilisation, période de validité</li>
-                            <li>Les clients saisissent le code lors de la création du devis</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="bg-white shadow rounded-lg">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Informations du code</h3>
-            </div>
-
-            {{ form_start(form, {'attr': {'class': 'px-6 py-6 space-y-6'}}) }}
+            {{ form_start(form, {'attr': {'class': 'space-y-6', 'id': 'discount-code-form'}}) }}
                 
-                <!-- Code et nom -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        {{ form_label(form.code, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                        <div class="flex space-x-2">
-                            {{ form_widget(form.code, {'attr': {'style': 'text-transform: uppercase;'}}) }}
-                            <button type="button" id="generate-code-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-sm">
-                                <i class="fas fa-random"></i>
-                            </button>
-                        </div>
-                        {{ form_help(form.code) }}
-                        {{ form_errors(form.code) }}
-                    </div>
-
-                    <div>
-                        {{ form_label(form.name, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                        {{ form_widget(form.name) }}
-                        {{ form_help(form.name) }}
-                        {{ form_errors(form.name) }}
-                    </div>
+                <!-- Informations de base -->
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Informations de base</h3>
                 </div>
-
-                <!-- Description -->
-                <div>
-                    {{ form_label(form.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                    {{ form_widget(form.description) }}
-                    {{ form_help(form.description) }}
-                    {{ form_errors(form.description) }}
-                </div>
-
-                <!-- Type et valeur -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        {{ form_label(form.type, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                        {{ form_widget(form.type, {'attr': {'id': 'discount-type'}}) }}
-                        {{ form_help(form.type) }}
-                        {{ form_errors(form.type) }}
-                    </div>
-
-                    <div>
-                        {{ form_label(form.value, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                        <div class="relative">
-                            {{ form_widget(form.value, {'attr': {'id': 'discount-value'}}) }}
-                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <span class="text-gray-500 sm:text-sm" id="value-unit">€</span>
-                            </div>
-                        </div>
-                        {{ form_help(form.value) }}
-                        {{ form_errors(form.value) }}
-                        <div class="mt-2 p-3 bg-gray-50 rounded-lg">
-                            <div class="text-sm text-gray-700">
-                                <div id="value-examples">
-                                    <p class="font-medium mb-1">Exemples :</p>
-                                    <ul class="space-y-1 text-sm">
-                                        <li id="example-percentage" style="display: none;"><code>10</code> → 10% de réduction</li>
-                                        <li id="example-fixed" style="display: none;"><code>50</code> → 50€ de réduction</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Conditions -->
-                <div class="border-t border-gray-200 pt-6">
-                    <h4 class="text-md font-medium text-gray-900 mb-4">Conditions d'utilisation</h4>
-                    
+                
+                <div class="px-6 py-4 space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            {{ form_label(form.validUntil, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                            {{ form_widget(form.validUntil) }}
-                            {{ form_help(form.validUntil) }}
-                            {{ form_errors(form.validUntil) }}
+                            {{ form_label(form.code, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.code, {
+                                'attr': {
+                                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono uppercase',
+                                    'placeholder': 'CODE20'
+                                }
+                            }) }}
+                            {{ form_errors(form.code) }}
+                            <p class="text-xs text-gray-500 mt-1">Code unique (lettres et chiffres uniquement)</p>
+                        </div>
+                        
+                        <div>
+                            {{ form_label(form.name, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.name, {
+                                'attr': {
+                                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+                                    'placeholder': 'Nom du code de réduction'
+                                }
+                            }) }}
+                            {{ form_errors(form.name) }}
                         </div>
                     </div>
-
-                    <div class="mt-4">
-                        {{ form_label(form.usageLimit, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                        {{ form_widget(form.usageLimit) }}
-                        {{ form_help(form.usageLimit) }}
-                        {{ form_errors(form.usageLimit) }}
+                    
+                    <div>
+                        {{ form_label(form.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.description, {
+                            'attr': {
+                                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+                                'rows': 3,
+                                'placeholder': 'Description du code de réduction (optionnel)'
+                            }
+                        }) }}
+                        {{ form_errors(form.description) }}
                     </div>
                 </div>
 
-                <!-- Statut actif -->
-                <div class="border-t border-gray-200 pt-6">
-                    <div class="flex items-center">
-                        {{ form_widget(form.isActive, {'attr': {'class': 'form-checkbox'}}) }}
-                        <div class="ml-3">
-                            {{ form_label(form.isActive, null, {'label_attr': {'class': 'text-sm font-medium text-gray-700'}}) }}
-                            {{ form_help(form.isActive) }}
+                <!-- Configuration de la réduction -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Configuration de la réduction</h3>
+                    
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                {{ form_label(form.type, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(form.type, {
+                                    'attr': {
+                                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+                                        'id': 'discount-type'
+                                    }
+                                }) }}
+                                {{ form_errors(form.type) }}
+                            </div>
+                            
+                            <div>
+                                {{ form_label(form.value, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                <div class="relative">
+                                    {{ form_widget(form.value, {
+                                        'attr': {
+                                            'class': 'w-full px-3 py-2 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+                                            'step': '0.01',
+                                            'min': '0',
+                                            'placeholder': '0.00'
+                                        }
+                                    }) }}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 text-sm" id="value-unit">€</span>
+                                    </div>
+                                </div>
+                                {{ form_errors(form.value) }}
+                                <p class="text-xs text-gray-500 mt-1" id="value-help">Montant de la réduction</p>
+                            </div>
                         </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {% if form.minimumAmount is defined %}
+                            <div>
+                                {{ form_label(form.minimumAmount, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                <div class="relative">
+                                    {{ form_widget(form.minimumAmount, {
+                                        'attr': {
+                                            'class': 'w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+                                            'step': '0.01',
+                                            'min': '0',
+                                            'placeholder': '0.00'
+                                        }
+                                    }) }}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 text-sm">€</span>
+                                    </div>
+                                </div>
+                                {{ form_errors(form.minimumAmount) }}
+                                <p class="text-xs text-gray-500 mt-1">Montant minimum requis (optionnel)</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if form.maximumDiscount is defined %}
+                            <div id="maximum-discount-field" style="display: none;">
+                                {{ form_label(form.maximumDiscount, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                <div class="relative">
+                                    {{ form_widget(form.maximumDiscount, {
+                                        'attr': {
+                                            'class': 'w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+                                            'step': '0.01',
+                                            'min': '0',
+                                            'placeholder': '0.00'
+                                        }
+                                    }) }}
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 text-sm">€</span>
+                                    </div>
+                                </div>
+                                {{ form_errors(form.maximumDiscount) }}
+                                <p class="text-xs text-gray-500 mt-1">Réduction maximale (pour les pourcentages)</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Période de validité -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Période de validité</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {% if form.validFrom is defined %}
+                        <div>
+                            {{ form_label(form.validFrom, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.validFrom, {
+                                'attr': {
+                                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
+                                }
+                            }) }}
+                            {{ form_errors(form.validFrom) }}
+                            <p class="text-xs text-gray-500 mt-1">Date de début (optionnel)</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if form.validUntil is defined %}
+                        <div>
+                            {{ form_label(form.validUntil, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.validUntil, {
+                                'attr': {
+                                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
+                                }
+                            }) }}
+                            {{ form_errors(form.validUntil) }}
+                            <p class="text-xs text-gray-500 mt-1">Date d'expiration (optionnel)</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Limites d'utilisation -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Limites d'utilisation</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {% if form.usageLimit is defined %}
+                        <div>
+                            {{ form_label(form.usageLimit, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.usageLimit, {
+                                'attr': {
+                                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+                                    'min': '1',
+                                    'placeholder': 'Illimité'
+                                }
+                            }) }}
+                            {{ form_errors(form.usageLimit) }}
+                            <p class="text-xs text-gray-500 mt-1">Nombre maximum d'utilisations (optionnel)</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if form.isActive is defined %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
+                            <div class="flex items-center space-x-6">
+                                <label class="inline-flex items-center">
+                                    {{ form_widget(form.isActive, {
+                                        'attr': {
+                                            'class': 'h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded'
+                                        }
+                                    }) }}
+                                    <span class="ml-2 text-sm text-gray-700">Code actif</span>
+                                </label>
+                            </div>
+                            {{ form_errors(form.isActive) }}
+                            <p class="text-xs text-gray-500 mt-1">Décochez pour désactiver temporairement</p>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
 
                 <!-- Actions -->
-                <div class="flex justify-between items-center pt-6 border-t border-gray-200">
+                <div class="px-6 py-4 border-t border-gray-200 flex justify-between">
                     <a href="{{ path('app_admin_discount_codes') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-3 rounded-lg inline-flex items-center">
                         <i class="fas fa-times mr-2"></i>
                         Annuler
                     </a>
                     
+                    {% block submit_button %}
                     <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg inline-flex items-center">
-                        <i class="fas fa-save mr-2"></i>
+                        <i class="fas fa-plus mr-2"></i>
                         Créer le code
                     </button>
+                    {% endblock %}
                 </div>
 
             {{ form_end(form) }}
@@ -155,48 +240,48 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const typeSelect = document.getElementById('discount-type');
+            const valueInput = document.querySelector('input[name*="[value]"]');
             const valueUnit = document.getElementById('value-unit');
-            const maxDiscountField = document.getElementById('maximum-discount-field');
-            const examplePercentage = document.getElementById('example-percentage');
-            const exampleFixed = document.getElementById('example-fixed');
-            const generateBtn = document.getElementById('generate-code-btn');
-            const codeInput = document.querySelector('#discount_code_code');
+            const valueHelp = document.getElementById('value-help');
+            const maximumDiscountField = document.getElementById('maximum-discount-field');
             
-            function updateValueDisplay() {
-                const type = typeSelect.value;
+            // Champs pour transformation
+            const codeInput = document.querySelector('input[name*="[code]"]');
+
+            function updateTypeDisplay() {
+                if (!typeSelect || !valueUnit || !valueHelp) return;
                 
-                if (type === 'percentage') {
+                const selectedType = typeSelect.value;
+                
+                if (selectedType === 'percentage') {
                     valueUnit.textContent = '%';
-                    maxDiscountField.style.display = 'block';
-                    examplePercentage.style.display = 'list-item';
-                    exampleFixed.style.display = 'none';
+                    valueHelp.textContent = 'Pourcentage de réduction (ex: 20 pour 20%)';
+                    if (maximumDiscountField) {
+                        maximumDiscountField.style.display = 'block';
+                    }
                 } else {
                     valueUnit.textContent = '€';
-                    maxDiscountField.style.display = 'none';
-                    examplePercentage.style.display = 'none';
-                    exampleFixed.style.display = 'list-item';
+                    valueHelp.textContent = 'Montant fixe de réduction en euros';
+                    if (maximumDiscountField) {
+                        maximumDiscountField.style.display = 'none';
+                    }
                 }
             }
-            
-            typeSelect.addEventListener('change', updateValueDisplay);
-            updateValueDisplay(); // Initial call
-            
-            // Générer un code aléatoire
-            generateBtn.addEventListener('click', function() {
-                fetch('{{ path('app_admin_discount_codes_generate') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.code) {
-                        codeInput.value = data.code;
-                    }
-                })
-                .catch(error => console.error('Erreur:', error));
-            });
+
+            // Event listeners
+            if (typeSelect) {
+                typeSelect.addEventListener('change', updateTypeDisplay);
+            }
+
+            // Transformation automatique du code en majuscules
+            if (codeInput) {
+                codeInput.addEventListener('input', function() {
+                    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                });
+            }
+
+            // Initialisation
+            updateTypeDisplay();
         });
     </script>
 {% endblock %}

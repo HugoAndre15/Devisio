@@ -92,6 +92,13 @@ class Quote
     #[ORM\OneToOne(mappedBy: 'quote', cascade: ['persist', 'remove'])]
     private ?Invoice $invoice = null;
 
+    #[ORM\ManyToOne(targetEntity: DiscountCode::class, inversedBy: 'quotes')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?DiscountCode $discountCode = null;
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?string $discountAmount = null;
+
     public function __construct()
     {
         $this->items = new ArrayCollection();
@@ -585,123 +592,117 @@ class Quote
         return $this->customer ? $this->customer->getTypeLabel() : 'Inconnu';
     }
 
-    #[ORM\ManyToOne(inversedBy: 'quotes')]
-private ?DiscountCode $discountCode = null;
-
-#[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
-private ?string $discountAmount = '0.00';
-
-// Méthodes getter/setter à ajouter :
-public function getDiscountCode(): ?DiscountCode
-{
-    return $this->discountCode;
-}
-
-public function setDiscountCode(?DiscountCode $discountCode): static
-{
-    $this->discountCode = $discountCode;
-    return $this;
-}
-
-public function getDiscountAmount(): ?string
-{
-    return $this->discountAmount;
-}
-
-public function setDiscountAmount(?string $discountAmount): static
-{
-    $this->discountAmount = $discountAmount ?: '0.00';
-    return $this;
-}
-
-// Méthode calculateTotals() mise à jour :
-public function calculateTotals(): void
-{
-    $subtotal = 0;
-    foreach ($this->items as $item) {
-        $subtotal += (float) $item->getTotal();
-    }
-    
-    $this->subtotal = number_format($subtotal, 2, '.', '');
-    $vatRate = $this->company ? (float) $this->company->getVatRate() : 20;
-    $this->vatAmount = number_format($subtotal * ($vatRate / 100), 2, '.', '');
-    
-    // Application des tarifs saisonniers
-    $seasonalSubtotal = $this->calculateSeasonalPricing($subtotal);
-    
-    // Application de la réduction
-    $discountAmount = 0;
-    if ($this->discountCode && $this->discountCode->canBeUsed()) {
-        $discountAmount = $this->discountCode->calculateDiscount($seasonalSubtotal);
-    }
-    $this->discountAmount = number_format($discountAmount, 2, '.', '');
-    
-    $finalSubtotal = $seasonalSubtotal - $discountAmount;
-    $finalVatAmount = $finalSubtotal * ($vatRate / 100);
-    
-    $this->vatAmount = number_format($finalVatAmount, 2, '.', '');
-    $this->total = number_format($finalSubtotal + $finalVatAmount, 2, '.', '');
-}
-
-// Nouvelle méthode pour calculer les tarifs saisonniers :
-private function calculateSeasonalPricing(float $baseAmount): float
-{
-    if (!$this->company) {
-        return $baseAmount;
+    // Méthodes getter/setter à ajouter :
+    public function getDiscountCode(): ?DiscountCode
+    {
+        return $this->discountCode;
     }
 
-    // Trouver la saison active pour la date du devis
-    $activeSeason = null;
-    foreach ($this->company->getSeasons() as $season) {
-        if ($season->isActiveForDate($this->quoteDate)) {
-            $activeSeason = $season;
-            break;
+    public function setDiscountCode(?DiscountCode $discountCode): static
+    {
+        $this->discountCode = $discountCode;
+        return $this;
+    }
+
+    public function getDiscountAmount(): ?string
+    {
+        return $this->discountAmount;
+    }
+
+    public function setDiscountAmount(?string $discountAmount): static
+    {
+        $this->discountAmount = $discountAmount ?: '0.00';
+        return $this;
+    }
+
+    // Méthode calculateTotals() mise à jour :
+    public function calculateTotals(): void
+    {
+        $subtotal = 0;
+        foreach ($this->items as $item) {
+            $subtotal += (float) $item->getTotal();
         }
+        
+        $this->subtotal = number_format($subtotal, 2, '.', '');
+        $vatRate = $this->company ? (float) $this->company->getVatRate() : 20;
+        $this->vatAmount = number_format($subtotal * ($vatRate / 100), 2, '.', '');
+        
+        // Application des tarifs saisonniers
+        $seasonalSubtotal = $this->calculateSeasonalPricing($subtotal);
+        
+        // Application de la réduction
+        $discountAmount = 0;
+        if ($this->discountCode && $this->discountCode->canBeUsed()) {
+            $discountAmount = $this->discountCode->calculateDiscount($seasonalSubtotal);
+        }
+        $this->discountAmount = number_format($discountAmount, 2, '.', '');
+        
+        $finalSubtotal = $seasonalSubtotal - $discountAmount;
+        $finalVatAmount = $finalSubtotal * ($vatRate / 100);
+        
+        $this->vatAmount = number_format($finalVatAmount, 2, '.', '');
+        $this->total = number_format($finalSubtotal + $finalVatAmount, 2, '.', '');
     }
 
-    if (!$activeSeason || $activeSeason->getMultiplier() == 1.0) {
-        return $baseAmount;
+    // Nouvelle méthode pour calculer les tarifs saisonniers :
+    private function calculateSeasonalPricing(float $baseAmount): float
+    {
+        if (!$this->company) {
+            return $baseAmount;
+        }
+
+        // Trouver la saison active pour la date du devis
+        $activeSeason = null;
+        foreach ($this->company->getSeasons() as $season) {
+            if ($season->isActiveForDate($this->quoteDate)) {
+                $activeSeason = $season;
+                break;
+            }
+        }
+
+        if (!$activeSeason || $activeSeason->getMultiplier() == 1.0) {
+            return $baseAmount;
+        }
+
+        return $baseAmount * (float) $activeSeason->getMultiplier();
     }
 
-    return $baseAmount * (float) $activeSeason->getMultiplier();
-}
-
-// Méthodes d'affichage formatées :
-public function getFormattedDiscountAmount(): string
-{
-    return number_format((float) $this->discountAmount, 2, ',', ' ') . ' €';
-}
-
-public function hasDiscount(): bool
-{
-    return $this->discountAmount && (float) $this->discountAmount > 0;
-}
-
-public function applyDiscountCode(DiscountCode $discountCode): bool
-{
-    if (!$discountCode->canBeUsed()) {
-        return false;
+    // Méthodes d'affichage formatées :
+    public function getFormattedDiscountAmount(): string
+    {
+        return number_format((float) $this->discountAmount, 2, ',', ' ') . ' €';
     }
 
-    $currentSubtotal = (float) $this->subtotal;
-    if (!$discountCode->isValidForAmount($currentSubtotal)) {
-        return false;
+    public function hasDiscount(): bool
+    {
+        return $this->discountAmount && (float) $this->discountAmount > 0;
     }
 
-    $this->discountCode = $discountCode;
-    $this->calculateTotals();
-    
-    // Incrémenter l'utilisation du code
-    $discountCode->incrementUsage();
-    
-    return true;
-}
+    public function applyDiscountCode(DiscountCode $discountCode): bool
+    {
+        if (!$discountCode->canBeUsed()) {
+            return false;
+        }
 
-// Méthode pour supprimer le code de réduction :
-public function removeDiscountCode(): void
-{
-    $this->discountCode = null;
-    $this->discountAmount = '0.00';
-    $this->calculateTotals();
-}
+        $currentSubtotal = (float) $this->subtotal;
+        if (!$discountCode->isValidForAmount($currentSubtotal)) {
+            return false;
+        }
+
+        $this->discountCode = $discountCode;
+        $this->calculateTotals();
+        
+        // Incrémenter l'utilisation du code
+        $discountCode->incrementUsage();
+        
+        return true;
+    }
+
+    // Méthode pour supprimer le code de réduction :
+    public function removeDiscountCode(): void
+    {
+        $this->discountCode = null;
+        $this->discountAmount = '0.00';
+        $this->calculateTotals();
+    }
 }

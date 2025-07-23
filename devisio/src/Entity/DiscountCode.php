@@ -9,44 +9,49 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: DiscountCodeRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class DiscountCode
 {
-    const TYPE_PERCENTAGE = 'percentage';
-    const TYPE_FIXED_AMOUNT = 'fixed_amount';
+    public const TYPE_PERCENTAGE = 'percentage';
+    public const TYPE_FIXED_AMOUNT = 'fixed_amount';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\ManyToOne(targetEntity: Company::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Company $company = null;
+
     #[ORM\Column(length: 50)]
-    #[Assert\NotBlank(message: 'Le code est requis.')]
-    #[Assert\Length(min: 3, max: 50, minMessage: 'Le code doit faire au moins 3 caractères.')]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 3, max: 50)]
     private ?string $code = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: 'Le nom est requis.')]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     private ?string $name = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
     #[ORM\Column(length: 20)]
-    #[Assert\NotBlank(message: 'Le type de réduction est requis.')]
-    #[Assert\Choice(choices: [self::TYPE_PERCENTAGE, self::TYPE_FIXED_AMOUNT], message: 'Type de réduction invalide.')]
+    #[Assert\Choice(choices: [self::TYPE_PERCENTAGE, self::TYPE_FIXED_AMOUNT])]
     private ?string $type = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    #[Assert\NotBlank(message: 'La valeur de réduction est requise.')]
-    #[Assert\Positive(message: 'La valeur de réduction doit être positive.')]
+    #[Assert\NotBlank]
+    #[Assert\Positive]
     private ?string $value = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
-    #[Assert\Positive(message: 'Le montant minimum doit être positif.')]
+    #[Assert\PositiveOrZero]
     private ?string $minimumAmount = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
-    #[Assert\Positive(message: 'Le montant maximum doit être positif.')]
+    #[Assert\PositiveOrZero]
     private ?string $maximumDiscount = null;
 
     #[ORM\Column(type: 'date', nullable: true)]
@@ -56,13 +61,13 @@ class DiscountCode
     private ?\DateTimeInterface $validUntil = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
-    #[Assert\Positive(message: 'Le nombre d\'utilisations doit être positif.')]
+    #[Assert\PositiveOrZero]
     private ?int $usageLimit = null;
 
     #[ORM\Column(type: 'integer')]
     private int $usageCount = 0;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'boolean')]
     private bool $isActive = true;
 
     #[ORM\Column]
@@ -70,10 +75,6 @@ class DiscountCode
 
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
-
-    #[ORM\ManyToOne(inversedBy: 'discountCodes')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Company $company = null;
 
     #[ORM\OneToMany(mappedBy: 'discountCode', targetEntity: Quote::class)]
     private Collection $quotes;
@@ -89,9 +90,26 @@ class DiscountCode
         $this->updatedAt = new \DateTimeImmutable();
     }
 
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getCompany(): ?Company
+    {
+        return $this->company;
+    }
+
+    public function setCompany(?Company $company): static
+    {
+        $this->company = $company;
+        return $this;
     }
 
     public function getCode(): ?string
@@ -215,6 +233,12 @@ class DiscountCode
         return $this;
     }
 
+    public function incrementUsageCount(): static
+    {
+        $this->usageCount++;
+        return $this;
+    }
+
     public function isActive(): bool
     {
         return $this->isActive;
@@ -245,17 +269,6 @@ class DiscountCode
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
-        return $this;
-    }
-
-    public function getCompany(): ?Company
-    {
-        return $this->company;
-    }
-
-    public function setCompany(?Company $company): static
-    {
-        $this->company = $company;
         return $this;
     }
 
@@ -317,30 +330,28 @@ class DiscountCode
         return $this;
     }
 
-    public function getTypeLabel(): string
-    {
-        return match($this->type) {
-            self::TYPE_PERCENTAGE => 'Pourcentage',
-            self::TYPE_FIXED_AMOUNT => 'Montant fixe',
-            default => 'Inconnu'
-        };
-    }
+    // Méthodes utilitaires
 
-    public static function getTypeChoices(): array
+    public function canBeUsed(): bool
     {
-        return [
-            'Pourcentage' => self::TYPE_PERCENTAGE,
-            'Montant fixe' => self::TYPE_FIXED_AMOUNT,
-        ];
-    }
-
-    public function isValidForDate(\DateTimeInterface $date): bool
-    {
-        if ($this->validFrom && $date < $this->validFrom) {
+        if (!$this->isActive) {
             return false;
         }
 
-        if ($this->validUntil && $date > $this->validUntil) {
+        $now = new \DateTime();
+
+        // Vérifier la date de début
+        if ($this->validFrom && $this->validFrom > $now) {
+            return false;
+        }
+
+        // Vérifier la date de fin
+        if ($this->validUntil && $this->validUntil < $now) {
+            return false;
+        }
+
+        // Vérifier la limite d'utilisation
+        if ($this->usageLimit && $this->usageCount >= $this->usageLimit) {
             return false;
         }
 
@@ -356,73 +367,35 @@ class DiscountCode
         return true;
     }
 
-    public function canBeUsed(): bool
-    {
-        if (!$this->isActive) {
-            return false;
-        }
-
-        if ($this->usageLimit && $this->usageCount >= $this->usageLimit) {
-            return false;
-        }
-
-        $now = new \DateTime();
-        if (!$this->isValidForDate($now)) {
-            return false;
-        }
-
-        return true;
-    }
-
     public function calculateDiscount(float $amount): float
     {
-        if (!$this->isValidForAmount($amount)) {
-            return 0.0;
+        if (!$this->canBeUsed() || !$this->isValidForAmount($amount)) {
+            return 0;
         }
 
-        $discount = 0.0;
+        $discount = 0;
 
         if ($this->type === self::TYPE_PERCENTAGE) {
             $discount = $amount * ((float) $this->value / 100);
+            
+            // Appliquer la limite maximale si définie
+            if ($this->maximumDiscount && $discount > (float) $this->maximumDiscount) {
+                $discount = (float) $this->maximumDiscount;
+            }
         } elseif ($this->type === self::TYPE_FIXED_AMOUNT) {
-            $discount = (float) $this->value;
+            $discount = min((float) $this->value, $amount);
         }
 
-        // Appliquer la limite de réduction maximale
-        if ($this->maximumDiscount && $discount > (float) $this->maximumDiscount) {
-            $discount = (float) $this->maximumDiscount;
-        }
-
-        // Ne pas dépasser le montant total
-        if ($discount > $amount) {
-            $discount = $amount;
-        }
-
-        return $discount;
-    }
-
-    public function incrementUsage(): void
-    {
-        $this->usageCount++;
-        $this->updatedAt = new \DateTimeImmutable();
+        return round($discount, 2);
     }
 
     public function getFormattedValue(): string
     {
         if ($this->type === self::TYPE_PERCENTAGE) {
-            return $this->value . '%';
+            return (float) $this->value . '%';
         }
-        
-        return number_format((float) $this->value, 2, ',', ' ') . ' €';
-    }
 
-    public function getUsageText(): string
-    {
-        if ($this->usageLimit) {
-            return $this->usageCount . '/' . $this->usageLimit;
-        }
-        
-        return (string) $this->usageCount;
+        return number_format((float) $this->value, 2, ',', ' ') . ' €';
     }
 
     public function getDaysUntilExpiration(): ?int
@@ -432,15 +405,51 @@ class DiscountCode
         }
 
         $now = new \DateTime();
-        $interval = $now->diff($this->validUntil);
-        
-        return $interval->invert ? -$interval->days : $interval->days;
+        $diff = $now->diff($this->validUntil);
+
+        return $diff->invert ? -$diff->days : $diff->days;
     }
 
-    public function isExpiringSoon(int $days = 7): bool
+    public static function getTypeChoices(): array
     {
-        $daysUntilExpiration = $this->getDaysUntilExpiration();
-        
-        return $daysUntilExpiration !== null && $daysUntilExpiration <= $days && $daysUntilExpiration >= 0;
+        return [
+            'Pourcentage' => self::TYPE_PERCENTAGE,
+            'Montant fixe' => self::TYPE_FIXED_AMOUNT,
+        ];
     }
+
+    public function __toString(): string
+    {
+        return $this->code . ' - ' . $this->name;
+    }
+
+
+    public function getTypeLabel(): string
+    {
+        return match($this->type) {
+            self::TYPE_PERCENTAGE => 'Pourcentage',
+            self::TYPE_FIXED_AMOUNT => 'Montant fixe',
+            default => 'Inconnu'
+        };
+    }
+
+    public function getFormattedDescription(): string
+    {
+        $label = $this->getTypeLabel();
+        $value = $this->getFormattedValue();
+        
+        $description = "{$label} : {$value}";
+        
+        if ($this->minimumAmount) {
+            $description .= " (min. " . number_format((float) $this->minimumAmount, 2, ',', ' ') . " €)";
+        }
+        
+        if ($this->type === self::TYPE_PERCENTAGE && $this->maximumDiscount) {
+            $description .= " (max. " . number_format((float) $this->maximumDiscount, 2, ',', ' ') . " €)";
+        }
+        
+        return $description;
+    }
+
+    
 }

@@ -7,6 +7,7 @@ use App\Entity\QuoteItem;
 use App\Entity\Invoice;
 use App\Entity\InvoiceItem;
 use App\Form\QuoteType;
+use App\Repository\DiscountCodeRepository;
 use App\Repository\QuoteRepository;
 use App\Service\PdfGeneratorService;
 use App\Service\EmailService;
@@ -86,7 +87,7 @@ class QuoteController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-        // NOUVEAUTÉ : Vérifier que le client sélectionné est actif
+            // Vérifier que le client sélectionné est actif
             $customer = $quote->getCustomer();
             if (!$customer->isActive()) {
                 $this->addFlash('error', 'Impossible de créer un devis pour un client inactif. Réactivez d\'abord le client.');
@@ -109,6 +110,18 @@ class QuoteController extends AbstractController
                     'quote' => $quote,
                     'form' => $form,
                 ]);
+            }
+
+            // Traiter le code de réduction s'il y en a un
+            $discountCodeInput = $form->get('discountCodeInput')->getData();
+            if ($discountCodeInput) {
+                $discountCodeRepo = $entityManager->getRepository(\App\Entity\DiscountCode::class);
+                $discountCode = $discountCodeRepo->findValidCodeByCompany($this->getUser()->getCompany(), $discountCodeInput);
+                
+                if ($discountCode && $discountCode->canBeUsed()) {
+                    $quote->setDiscountCode($discountCode);
+                    // Le montant de la réduction sera calculé dans calculateTotals()
+                }
             }
 
             $quote->calculateTotals();
@@ -400,6 +413,47 @@ class QuoteController extends AbstractController
             'price' => (float) $product->getPrice(), // Convertir en float pour JavaScript
             'unit' => $product->getUnit(),
             'type' => $product->getType(),
+        ]);
+    }
+
+    #[Route('/validate-discount-code', name: 'app_quotes_validate_discount_code', methods: ['POST'])]
+    public function validateDiscountCode(Request $request, DiscountCodeRepository $discountCodeRepository): JsonResponse
+    {
+        $code = $request->request->get('code');
+        $amount = (float) $request->request->get('amount', 0);
+        $company = $this->getUser()->getCompany();
+
+        if (!$code) {
+            return new JsonResponse(['valid' => false, 'message' => 'Code requis']);
+        }
+
+        $discountCode = $discountCodeRepository->findValidCodeByCompany($company, $code);
+
+        if (!$discountCode) {
+            return new JsonResponse(['valid' => false, 'message' => 'Code invalide ou expiré']);
+        }
+
+        if (!$discountCode->canBeUsed()) {
+            return new JsonResponse(['valid' => false, 'message' => 'Code non utilisable']);
+        }
+
+        if (!$discountCode->isValidForAmount($amount)) {
+            $minimumAmount = number_format((float) $discountCode->getMinimumAmount(), 2, ',', ' ');
+            return new JsonResponse(['valid' => false, 'message' => "Montant minimum requis: {$minimumAmount} €"]);
+        }
+
+        $discount = $discountCode->calculateDiscount($amount);
+
+        return new JsonResponse([
+            'valid' => true,
+            'discount_code' => [
+                'id' => $discountCode->getId(),
+                'name' => $discountCode->getName(),
+                'type' => $discountCode->getType(),
+                'value' => $discountCode->getFormattedValue(),
+                'discount_amount' => $discount,
+                'formatted_discount' => number_format($discount, 2, ',', ' ') . ' €'
+            ]
         ]);
     }
 

@@ -4,195 +4,326 @@
 {% block page_title %}Nouveau devis{% endblock %}
 
 {% block header_actions %}
-    <a href="{{ path('app_quotes') }}" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200">
+    <a href="{{ path('app_quotes') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg inline-flex items-center">
         <i class="fas fa-arrow-left mr-2"></i>
         Retour aux devis
     </a>
 {% endblock %}
 
 {% block body %}
-    <div class="bg-white rounded-lg shadow">
-        {{ form_start(form, {'attr': {'class': 'space-y-6', 'id': 'quote-form'}}) }}
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Informations générales</h3>
-            </div>
-            
-            <div class="px-6 py-4 space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        {{ form_label(form.customer, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                        {{ form_widget(form.customer, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
-                        {{ form_errors(form.customer) }}
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white shadow rounded-lg">
+            {{ form_start(form, {'attr': {'class': 'space-y-6', 'id': 'quote-form'}}) }}
+                
+                <!-- Informations générales -->
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Informations générales</h3>
+                </div>
+                
+                <div class="px-6 py-4 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            {{ form_label(form.customer, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.customer, {
+                                'attr': {
+                                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
+                                }
+                            }) }}
+                            {{ form_errors(form.customer) }}
+                        </div>
+                        
+                        <div>
+                            {{ form_label(form.subject, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.subject, {
+                                'attr': {
+                                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+                                    'placeholder': 'Sujet du devis'
+                                }
+                            }) }}
+                            {{ form_errors(form.subject) }}
+                        </div>
                     </div>
                     
                     <div>
-                        {{ form_label(form.subject, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                        {{ form_widget(form.subject, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
-                        {{ form_errors(form.subject) }}
-                    </div>
-                </div>
-                
-                <div>
-                    {{ form_label(form.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                    {{ form_widget(form.description, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
-                    {{ form_errors(form.description) }}
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        {{ form_label(form.quoteDate, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                        {{ form_widget(form.quoteDate, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
-                        {{ form_errors(form.quoteDate) }}
+                        {{ form_label(form.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.description, {
+                            'attr': {
+                                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+                                'rows': 3,
+                                'placeholder': 'Description détaillée du devis'
+                            }
+                        }) }}
+                        {{ form_errors(form.description) }}
                     </div>
                     
-                    <div>
-                        {{ form_label(form.validUntil, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                        {{ form_widget(form.validUntil, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
-                        {{ form_errors(form.validUntil) }}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            {{ form_label(form.quoteDate, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.quoteDate, {
+                                'attr': {
+                                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
+                                }
+                            }) }}
+                            {{ form_errors(form.quoteDate) }}
+                        </div>
+                        
+                        <div>
+                            {{ form_label(form.validUntil, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.validUntil, {
+                                'attr': {
+                                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent'
+                                }
+                            }) }}
+                            {{ form_errors(form.validUntil) }}
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="px-6 py-4 border-t border-gray-200">
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Produits et services</h3>
-                        <p class="text-sm text-gray-600 mt-1">Sélectionnez un produit pour remplir automatiquement le prix et l'unité</p>
+                <!-- Produits et services -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">Produits et services</h3>
+                            <p class="mt-1 text-sm text-gray-500">Sélectionnez un produit pour remplir automatiquement les informations</p>
+                        </div>
+                        <button type="button" id="add-item" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg inline-flex items-center">
+                            <i class="fas fa-plus mr-2"></i>
+                            Ajouter une ligne
+                        </button>
                     </div>
-                    <button type="button" id="add-item" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200">
-                        <i class="fas fa-plus mr-2"></i>
-                        Ajouter une ligne
-                    </button>
+                    
+                    <div id="quote-items" class="space-y-4" 
+                         data-prototype="{{ form_widget(form.items.vars.prototype)|e('html_attr') }}"
+                         data-index="{{ form.items|length }}">
+                        {% for item in form.items %}
+                            <div class="quote-item bg-gray-50 p-4 rounded-lg border" data-index="{{ loop.index0 }}">
+                                <div class="flex justify-between items-start mb-4">
+                                    <h4 class="font-medium text-gray-900">Ligne {{ loop.index }}</h4>
+                                    <button type="button" class="remove-item text-red-600 hover:text-red-800">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        {{ form_label(item.product, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                        {{ form_widget(item.product, {
+                                            'attr': {
+                                                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent product-select'
+                                            }
+                                        }) }}
+                                        {{ form_errors(item.product) }}
+                                    </div>
+                                    
+                                    <div>
+                                        {{ form_label(item.productName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                        {{ form_widget(item.productName, {
+                                            'attr': {
+                                                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+                                                'placeholder': 'Nom du produit ou service'
+                                            }
+                                        }) }}
+                                        {{ form_errors(item.productName) }}
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    {{ form_label(item.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                    {{ form_widget(item.description, {
+                                        'attr': {
+                                            'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+                                            'rows': 2,
+                                            'placeholder': 'Description détaillée'
+                                        }
+                                    }) }}
+                                    {{ form_errors(item.description) }}
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+                                    <div>
+                                        {{ form_label(item.unitPrice, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                        <div class="relative">
+                                            {{ form_widget(item.unitPrice, {
+                                                'attr': {
+                                                    'class': 'w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent price-input',
+                                                    'step': '0.01',
+                                                    'min': '0',
+                                                    'placeholder': '0.00'
+                                                }
+                                            }) }}
+                                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                                <span class="text-gray-500 text-sm">€</span>
+                                            </div>
+                                        </div>
+                                        {{ form_errors(item.unitPrice) }}
+                                        <p class="text-xs text-gray-500 mt-1">Prix unitaire HT</p>
+                                    </div>
+                                    
+                                    <div>
+                                        {{ form_label(item.quantity, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                        {{ form_widget(item.quantity, {
+                                            'attr': {
+                                                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent quantity-input',
+                                                'step': '0.01',
+                                                'min': '0',
+                                                'placeholder': '1'
+                                            }
+                                        }) }}
+                                        {{ form_errors(item.quantity) }}
+                                        <p class="text-xs text-blue-600 mt-1">Quantité</p>
+                                    </div>
+                                    
+                                    <div>
+                                        {{ form_label(item.unit, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                        {{ form_widget(item.unit, {
+                                            'attr': {
+                                                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+                                                'placeholder': 'unité'
+                                            }
+                                        }) }}
+                                        {{ form_errors(item.unit) }}
+                                        <p class="text-xs text-gray-500 mt-1">Unité</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Total HT</label>
+                                        <div class="w-full px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 font-semibold item-total">
+                                            0,00 €
+                                        </div>
+                                        <p class="text-xs text-blue-600 mt-1">Calculé automatiquement</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
-                
-                <div id="quote-items" class="space-y-4" 
-                     data-prototype="{{ form_widget(form.items.vars.prototype)|e('html_attr') }}"
-                     data-index="{{ form.items|length }}">
-                    {% for item in form.items %}
-                        <div class="quote-item bg-gray-50 p-4 rounded-lg border" data-index="{{ loop.index0 }}">
-                            <div class="flex justify-between items-start mb-4">
-                                <h4 class="font-medium text-gray-900">Ligne {{ loop.index }}</h4>
-                                <button type="button" class="remove-item text-red-600 hover:text-red-800">
-                                    <i class="fas fa-trash"></i>
+
+                <!-- Section Code de réduction -->
+                {% if form.discountCodeInput is defined %}
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Code de réduction</h3>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                            <div class="md:col-span-2">
+                                {{ form_label(form.discountCodeInput, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                                {{ form_widget(form.discountCodeInput, {
+                                    'attr': {
+                                        'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+                                        'placeholder': 'Entrez un code de réduction (optionnel)'
+                                    }
+                                }) }}
+                                {{ form_errors(form.discountCodeInput) }}
+                            </div>
+                            
+                            <div>
+                                <button type="button" id="apply-discount-code" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                                    <i class="fas fa-percent mr-2"></i>
+                                    Appliquer
                                 </button>
                             </div>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        </div>
+                        
+                        <div id="discount-code-result" class="mt-3 hidden">
+                            <div class="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
                                 <div>
-                                    {{ form_label(item.product, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                                    {{ form_widget(item.product, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent product-select'}}) }}
-                                    {{ form_errors(item.product) }}
+                                    <div class="text-sm font-medium text-green-800" id="discount-code-name"></div>
+                                    <div class="text-xs text-green-600" id="discount-code-description"></div>
                                 </div>
-                                
-                                <div>
-                                    {{ form_label(item.productName, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                                    {{ form_widget(item.productName, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
-                                    {{ form_errors(item.productName) }}
-                                </div>
-                            </div>
-                            
-                            <div class="mt-4">
-                                {{ form_label(item.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                                {{ form_widget(item.description, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
-                                {{ form_errors(item.description) }}
-                            </div>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-                                <div>
-                                    {{ form_label(item.unitPrice, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                                    <div class="relative">
-                                        {{ form_widget(item.unitPrice, {'attr': {'class': 'w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent price-input', 'readonly': true, 'style': 'background-color: #f3f4f6;'}}) }}
-                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                            <span class="text-gray-500 text-sm">€</span>
-                                        </div>
-                                    </div>
-                                    {{ form_errors(item.unitPrice) }}
-                                    <p class="text-xs text-gray-500 mt-1">Prix du produit sélectionné</p>
-                                </div>
-                                
-                                <div>
-                                    {{ form_label(item.quantity, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                                    {{ form_widget(item.quantity, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent quantity-input', 'min': '0', 'step': '0.01'}}) }}
-                                    {{ form_errors(item.quantity) }}
-                                    <p class="text-xs text-blue-600 mt-1">Modifiez la quantité</p>
-                                </div>
-                                
-                                <div>
-                                    {{ form_label(item.unit, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                                    {{ form_widget(item.unit, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent', 'readonly': true, 'style': 'background-color: #f3f4f6;'}}) }}
-                                    {{ form_errors(item.unit) }}
-                                    <p class="text-xs text-gray-500 mt-1">Unité du produit</p>
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Total</label>
-                                    <div class="w-full px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 font-semibold item-total">
-                                        0,00 €
-                                    </div>
-                                    <p class="text-xs text-blue-600 mt-1">Calculé automatiquement</p>
+                                <div class="text-right">
+                                    <div class="text-sm font-semibold text-green-800" id="discount-amount">-0,00 €</div>
+                                    <button type="button" id="remove-discount-code" class="text-xs text-red-600 hover:text-red-800">
+                                        Supprimer
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <div class="px-6 py-4 border-t border-gray-200">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        {{ form_label(form.terms, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                        {{ form_widget(form.terms, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
-                        {{ form_errors(form.terms) }}
+                        
+                        <div id="discount-code-error" class="mt-3 hidden">
+                            <div class="p-3 bg-red-50 border border-red-200 rounded-lg">
+                                <div class="text-sm text-red-800" id="discount-error-message"></div>
+                            </div>
+                        </div>
                     </div>
+                </div>
+                {% endif %}
+
+                <!-- Conditions et notes -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            {{ form_label(form.terms, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.terms, {
+                                'attr': {
+                                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+                                    'rows': 3,
+                                    'placeholder': 'Conditions particulières'
+                                }
+                            }) }}
+                            {{ form_errors(form.terms) }}
+                        </div>
+                        
+                        <div>
+                            {{ form_label(form.notes, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.notes, {
+                                'attr': {
+                                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+                                    'rows': 3,
+                                    'placeholder': 'Notes internes'
+                                }
+                            }) }}
+                            {{ form_errors(form.notes) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Totaux -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <div class="flex justify-end">
+                        <div class="w-full max-w-md">
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm text-gray-600">Sous-total HT :</span>
+                                    <span class="text-sm font-medium" id="subtotal">0,00 €</span>
+                                </div>
+                                <div class="flex justify-between items-center mb-2" id="discount-line" style="display: none;">
+                                    <span class="text-sm text-green-600">Réduction :</span>
+                                    <span class="text-sm font-medium text-green-600" id="discount-display">-0,00 €</span>
+                                </div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm text-gray-600">TVA (20%) :</span>
+                                    <span class="text-sm font-medium" id="vat-amount">0,00 €</span>
+                                </div>
+                                <div class="flex justify-between items-center pt-2 border-t border-gray-200">
+                                    <span class="text-base font-semibold text-gray-900">Total TTC :</span>
+                                    <span class="text-base font-semibold text-primary-600" id="total">0,00 €</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="px-6 py-4 border-t border-gray-200 flex justify-between">
+                    <a href="{{ path('app_quotes') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-3 rounded-lg inline-flex items-center">
+                        <i class="fas fa-times mr-2"></i>
+                        Annuler
+                    </a>
                     
-                    <div>
-                        {{ form_label(form.notes, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-2'}}) }}
-                        {{ form_widget(form.notes, {'attr': {'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}}) }}
-                        {{ form_errors(form.notes) }}
+                    <div class="space-x-3">
+                        <button type="submit" name="action" value="save" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg inline-flex items-center">
+                            <i class="fas fa-save mr-2"></i>
+                            Enregistrer
+                        </button>
+                        <button type="submit" name="action" value="save_and_send" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg inline-flex items-center">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            Enregistrer et envoyer
+                        </button>
                     </div>
                 </div>
-            </div>
 
-            <!-- Totaux -->
-            <div class="px-6 py-4 border-t border-gray-200">
-                <div class="flex justify-end">
-                    <div class="w-full max-w-md">
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm text-gray-600">Sous-total HT:</span>
-                                <span class="text-sm font-medium" id="subtotal">0,00 €</span>
-                            </div>
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm text-gray-600">TVA (20%):</span>
-                                <span class="text-sm font-medium" id="vat-amount">0,00 €</span>
-                            </div>
-                            <div class="flex justify-between items-center pt-2 border-t border-gray-200">
-                                <span class="text-base font-semibold text-gray-900">Total TTC:</span>
-                                <span class="text-base font-semibold text-primary-600" id="total">0,00 €</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="px-6 py-4 border-t border-gray-200 flex justify-between">
-                <a href="{{ path('app_quotes') }}" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition duration-200">
-                    <i class="fas fa-times mr-2"></i>
-                    Annuler
-                </a>
-                
-                <div class="space-x-3">
-                    <button type="submit" name="action" value="save" class="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition duration-200">
-                        <i class="fas fa-save mr-2"></i>
-                        Enregistrer
-                    </button>
-                    <button type="submit" name="action" value="save_and_send" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200">
-                        <i class="fas fa-paper-plane mr-2"></i>
-                        Enregistrer et envoyer
-                    </button>
-                </div>
-            </div>
-        {{ form_end(form) }}
+            {{ form_end(form) }}
+        </div>
     </div>
 {% endblock %}
 
@@ -204,10 +335,88 @@
             const itemsContainer = document.getElementById('quote-items');
             const addItemBtn = document.getElementById('add-item');
             let itemIndex = parseInt(itemsContainer.dataset.index) || 0;
+            let currentDiscountAmount = 0;
 
-            // Add item functionality
+            // Code de réduction
+            const discountCodeInput = document.getElementById('quote_discountCodeInput');
+            const applyDiscountBtn = document.getElementById('apply-discount-code');
+            const removeDiscountBtn = document.getElementById('remove-discount-code');
+            const discountResult = document.getElementById('discount-code-result');
+            const discountError = document.getElementById('discount-code-error');
+
+            if (applyDiscountBtn && discountCodeInput) {
+                applyDiscountBtn.addEventListener('click', function() {
+                    const code = discountCodeInput.value.trim();
+                    if (!code) return;
+
+                    const subtotal = calculateSubtotal();
+                    
+                    fetch('{{ path('app_quotes_validate_discount_code') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            'code': code,
+                            'amount': subtotal
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.valid) {
+                            currentDiscountAmount = data.discount_code.discount_amount;
+                            showDiscountSuccess(data.discount_code);
+                            calculateTotals();
+                        } else {
+                            showDiscountError(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        showDiscountError('Erreur lors de la validation du code');
+                    });
+                });
+            }
+
+            if (removeDiscountBtn) {
+                removeDiscountBtn.addEventListener('click', function() {
+                    currentDiscountAmount = 0;
+                    if (discountCodeInput) discountCodeInput.value = '';
+                    hideDiscountResult();
+                    calculateTotals();
+                });
+            }
+
+            function showDiscountSuccess(discountCode) {
+                if (document.getElementById('discount-code-name')) {
+                    document.getElementById('discount-code-name').textContent = discountCode.name;
+                }
+                if (document.getElementById('discount-code-description')) {
+                    document.getElementById('discount-code-description').textContent = `Code: ${discountCode.code} - ${discountCode.value}`;
+                }
+                if (document.getElementById('discount-amount')) {
+                    document.getElementById('discount-amount').textContent = `-${discountCode.formatted_discount}`;
+                }
+                
+                if (discountResult) discountResult.classList.remove('hidden');
+                if (discountError) discountError.classList.add('hidden');
+            }
+
+            function showDiscountError(message) {
+                if (document.getElementById('discount-error-message')) {
+                    document.getElementById('discount-error-message').textContent = message;
+                }
+                if (discountError) discountError.classList.remove('hidden');
+                if (discountResult) discountResult.classList.add('hidden');
+            }
+
+            function hideDiscountResult() {
+                if (discountResult) discountResult.classList.add('hidden');
+                if (discountError) discountError.classList.add('hidden');
+            }
+
+            // Ajouter une ligne
             addItemBtn.addEventListener('click', function() {
-                // Créer une nouvelle ligne complète au lieu d'utiliser le prototype
                 const newItemHtml = createNewItemHtml(itemIndex);
                 
                 const div = document.createElement('div');
@@ -219,7 +428,6 @@
                 itemIndex++;
                 itemsContainer.dataset.index = itemIndex;
                 
-                // Add remove functionality to new item
                 const removeBtn = div.querySelector('.remove-item');
                 if (removeBtn) {
                     removeBtn.addEventListener('click', function() {
@@ -229,10 +437,8 @@
                     });
                 }
                 
-                // Add calculation listeners to new item
                 addCalculationListeners(div);
                 
-                // Add product selection listener to new item
                 const productSelect = div.querySelector('.product-select');
                 if (productSelect) {
                     addProductSelectListener(productSelect);
@@ -253,8 +459,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Produit</label>
-                            <select name="quote[items][${index}][product]" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent product-select">
+                            <select name="quote[items][${index}][product]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent product-select">
                                 <option value="">Sélectionner un produit</option>
                                 ${getProductOptions()}
                             </select>
@@ -262,69 +467,41 @@
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nom du produit</label>
-                            <input type="text" 
-                                   name="quote[items][${index}][productName]" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                   placeholder="Nom du produit ou service"
-                                   readonly
-                                   style="background-color: #f3f4f6;">
+                            <input type="text" name="quote[items][${index}][productName]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="Nom du produit ou service">
                         </div>
                     </div>
                     
                     <div class="mt-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                        <textarea name="quote[items][${index}][description]" 
-                                  rows="2"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                  placeholder="Description détaillée"
-                                  readonly
-                                  style="background-color: #f3f4f6;"></textarea>
+                        <textarea name="quote[items][${index}][description]" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="Description détaillée"></textarea>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Prix unitaire</label>
                             <div class="relative">
-                                <input type="number" 
-                                       name="quote[items][${index}][unitPrice]" 
-                                       step="0.01"
-                                       min="0"
-                                       class="w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent price-input"
-                                       placeholder="0.00"
-                                       readonly
-                                       style="background-color: #f3f4f6;">
+                                <input type="number" name="quote[items][${index}][unitPrice]" step="0.01" min="0" class="w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent price-input" placeholder="0.00">
                                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                     <span class="text-gray-500 text-sm">€</span>
                                 </div>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">Prix du produit sélectionné</p>
+                            <p class="text-xs text-gray-500 mt-1">Prix unitaire HT</p>
                         </div>
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Quantité</label>
-                            <input type="number" 
-                                   name="quote[items][${index}][quantity]" 
-                                   step="0.01"
-                                   min="0"
-                                   value="1"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent quantity-input"
-                                   placeholder="1">
-                            <p class="text-xs text-blue-600 mt-1">Modifiez la quantité</p>
+                            <input type="number" name="quote[items][${index}][quantity]" step="0.01" min="0" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent quantity-input" placeholder="1">
+                            <p class="text-xs text-blue-600 mt-1">Quantité</p>
                         </div>
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Unité</label>
-                            <input type="text" 
-                                   name="quote[items][${index}][unit]" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                   placeholder="unité"
-                                   readonly
-                                   style="background-color: #f3f4f6;">
-                            <p class="text-xs text-gray-500 mt-1">Unité du produit</p>
+                            <input type="text" name="quote[items][${index}][unit]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="unité">
+                            <p class="text-xs text-gray-500 mt-1">Unité</p>
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Total</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Total HT</label>
                             <div class="w-full px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 font-semibold item-total">
                                 0,00 €
                             </div>
@@ -335,11 +512,10 @@
             }
 
             function getProductOptions() {
-                // Récupérer les options de produits depuis le premier select existant
                 const firstSelect = document.querySelector('.product-select');
                 if (firstSelect) {
                     let options = '';
-                    for (let i = 1; i < firstSelect.options.length; i++) { // Skip le premier (placeholder)
+                    for (let i = 1; i < firstSelect.options.length; i++) {
                         const option = firstSelect.options[i];
                         options += `<option value="${option.value}">${option.text}</option>`;
                     }
@@ -348,9 +524,7 @@
                 return '';
             }
 
-            // Supprimer l'ancienne fonction styleNewItem car elle n'est plus nécessaire
-
-            // Remove item functionality for existing items
+            // Supprimer une ligne existante
             document.querySelectorAll('.remove-item').forEach(button => {
                 button.addEventListener('click', function() {
                     if (itemsContainer.children.length > 1) {
@@ -361,7 +535,7 @@
                 });
             });
 
-            // Product selection functionality for existing items
+            // Sélection de produit
             document.querySelectorAll('.product-select').forEach(select => {
                 addProductSelectListener(select);
             });
@@ -376,44 +550,23 @@
                     const quantityInput = item.querySelector('input[name*="[quantity]"]');
                     
                     if (this.value) {
-                        // Get product data via AJAX - Construction manuelle de l'URL
                         const apiUrl = '/quotes/api/products/' + this.value;
-                        console.log('Fetching product data from:', apiUrl); // Debug
                         
                         fetch(apiUrl)
                             .then(response => {
-                                console.log('Response status:', response.status); // Debug
                                 if (!response.ok) {
                                     throw new Error('Product not found');
                                 }
                                 return response.json();
                             })
                             .then(data => {
-                                console.log('Product data received:', data); // Debug
-                                
-                                if (nameInput) {
-                                    nameInput.value = data.name || '';
-                                    nameInput.readOnly = true;
-                                    nameInput.style.backgroundColor = '#f3f4f6';
-                                }
-                                if (descInput) {
-                                    descInput.value = data.description || '';
-                                    descInput.readOnly = true;
-                                    descInput.style.backgroundColor = '#f3f4f6';
-                                }
-                                if (priceInput) {
-                                    priceInput.value = data.price || '';
-                                    priceInput.readOnly = true;
-                                    priceInput.style.backgroundColor = '#f3f4f6';
-                                }
-                                if (unitInput) {
-                                    unitInput.value = data.unit || '';
-                                    unitInput.readOnly = true;
-                                    unitInput.style.backgroundColor = '#f3f4f6';
-                                }
+                                if (nameInput) nameInput.value = data.name || '';
+                                if (descInput) descInput.value = data.description || '';
+                                if (priceInput) priceInput.value = data.price || '';
+                                if (unitInput) unitInput.value = data.unit || '';
                                 if (quantityInput && !quantityInput.value) {
                                     quantityInput.value = '1';
-                                    quantityInput.focus(); // Focus sur la quantité
+                                    quantityInput.focus();
                                 }
                                 
                                 calculateItemTotal(item);
@@ -423,13 +576,8 @@
                                 alert('Erreur lors du chargement des données du produit');
                             });
                     } else {
-                        // Si aucun produit sélectionné, rendre les champs modifiables
                         [nameInput, descInput, priceInput, unitInput].forEach(input => {
-                            if (input) {
-                                input.readOnly = false;
-                                input.style.backgroundColor = '';
-                                input.value = '';
-                            }
+                            if (input) input.value = '';
                         });
                         if (quantityInput) quantityInput.value = '1';
                         calculateItemTotal(item);
@@ -437,7 +585,7 @@
                 });
             }
 
-            // Add calculation listeners to existing items
+            // Calculs existants
             document.querySelectorAll('.quote-item').forEach(item => {
                 addCalculationListeners(item);
             });
@@ -449,9 +597,6 @@
                 [priceInput, quantityInput].forEach(input => {
                     if (input) {
                         input.addEventListener('input', function() {
-                            calculateItemTotal(item);
-                        });
-                        input.addEventListener('blur', function() {
                             calculateItemTotal(item);
                         });
                     }
@@ -477,7 +622,7 @@
                 calculateTotals();
             }
 
-            function calculateTotals() {
+            function calculateSubtotal() {
                 let subtotal = 0;
                 
                 document.querySelectorAll('.quote-item').forEach(item => {
@@ -491,11 +636,20 @@
                     }
                 });
                 
+                return subtotal;
+            }
+
+            function calculateTotals() {
+                const subtotal = calculateSubtotal();
+                const discountAmount = currentDiscountAmount || 0;
+                const subtotalAfterDiscount = subtotal - discountAmount;
                 const vatRate = 0.20; // 20% TVA
-                const vatAmount = subtotal * vatRate;
-                const total = subtotal + vatAmount;
+                const vatAmount = subtotalAfterDiscount * vatRate;
+                const total = subtotalAfterDiscount + vatAmount;
                 
                 const subtotalEl = document.getElementById('subtotal');
+                const discountLine = document.getElementById('discount-line');
+                const discountDisplay = document.getElementById('discount-display');
                 const vatEl = document.getElementById('vat-amount');
                 const totalEl = document.getElementById('total');
                 
@@ -504,6 +658,16 @@
                         style: 'currency',
                         currency: 'EUR'
                     });
+                }
+                
+                if (discountAmount > 0 && discountLine && discountDisplay) {
+                    discountLine.style.display = 'flex';
+                    discountDisplay.textContent = `-${discountAmount.toLocaleString('fr-FR', {
+                        style: 'currency',
+                        currency: 'EUR'
+                    })}`;
+                } else if (discountLine) {
+                    discountLine.style.display = 'none';
                 }
                 
                 if (vatEl) {
@@ -530,7 +694,7 @@
                 });
             }
 
-            // Initial calculation
+            // Calcul initial
             calculateTotals();
         });
     </script>
