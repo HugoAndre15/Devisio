@@ -1,223 +1,336 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Codes de réduction - Devisio{% endblock %}
+{% block title %}Codes de réduction - Administration - Devisio{% endblock %}
 {% block page_title %}Codes de réduction{% endblock %}
 
 {% block header_actions %}
-    <a href="{{ path('app_admin_discount_codes_new') }}" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg inline-flex items-center">
-        <i class="fas fa-plus mr-2"></i>
-        Nouveau code
-    </a>
+    <div class="flex space-x-3">
+        <a href="{{ path('app_admin_discount_codes_new') }}" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg inline-flex items-center">
+            <i class="fas fa-plus mr-2"></i>
+            Nouveau code
+        </a>
+        
+        <div class="relative">
+            <button type="button" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg inline-flex items-center" onclick="toggleFilterMenu()">
+                <i class="fas fa-filter mr-2"></i>
+                Filtres
+                <i class="fas fa-chevron-down ml-2"></i>
+            </button>
+            
+            <div id="filter-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10 border">
+                <div class="py-1">
+                    <a href="{{ path('app_admin_discount_codes') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {% if current_status is null %}bg-blue-50 text-blue-700{% endif %}">
+                        <i class="fas fa-list mr-2"></i>Tous les codes
+                    </a>
+                    <a href="{{ path('app_admin_discount_codes', {status: 'active'}) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {% if current_status == 'active' %}bg-blue-50 text-blue-700{% endif %}">
+                        <i class="fas fa-check-circle mr-2 text-green-500"></i>Actifs
+                    </a>
+                    <a href="{{ path('app_admin_discount_codes', {status: 'inactive'}) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {% if current_status == 'inactive' %}bg-blue-50 text-blue-700{% endif %}">
+                        <i class="fas fa-pause-circle mr-2 text-gray-500"></i>Inactifs
+                    </a>
+                    <div class="border-t border-gray-100"></div>
+                    <a href="{{ path('app_admin_discount_codes', {type: 'percentage'}) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {% if current_type == 'percentage' %}bg-blue-50 text-blue-700{% endif %}">
+                        <i class="fas fa-percentage mr-2 text-blue-500"></i>Pourcentage
+                    </a>
+                    <a href="{{ path('app_admin_discount_codes', {type: 'fixed_amount'}) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {% if current_type == 'fixed_amount' %}bg-blue-50 text-blue-700{% endif %}">
+                        <i class="fas fa-euro-sign mr-2 text-green-500"></i>Montant fixe
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block body %}
     <!-- Statistiques -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div class="bg-white p-6 rounded-lg shadow border">
+        <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <i class="fas fa-tags text-2xl text-blue-500"></i>
+                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-ticket-alt text-blue-600"></i>
+                    </div>
                 </div>
                 <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Total des codes</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ stats.total }}</p>
+                    <div class="text-sm font-medium text-gray-500">Total codes</div>
+                    <div class="text-2xl font-bold text-gray-900">{{ stats.total }}</div>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow border">
+        <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <i class="fas fa-check-circle text-2xl text-green-500"></i>
+                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600"></i>
+                    </div>
                 </div>
                 <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Codes actifs</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ stats.active }}</p>
+                    <div class="text-sm font-medium text-gray-500">Codes actifs</div>
+                    <div class="text-2xl font-bold text-gray-900">{{ stats.active }}</div>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow border">
+        <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <i class="fas fa-clock text-2xl text-red-500"></i>
+                    <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-clock text-red-600"></i>
+                    </div>
                 </div>
                 <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Codes expirés</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ stats.expired }}</p>
+                    <div class="text-sm font-medium text-gray-500">Codes expirés</div>
+                    <div class="text-2xl font-bold text-gray-900">{{ stats.expired }}</div>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow border">
+        <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <i class="fas fa-chart-line text-2xl text-purple-500"></i>
+                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-line text-purple-600"></i>
+                    </div>
                 </div>
                 <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Utilisés ce mois</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ stats.used_this_month }}</p>
+                    <div class="text-sm font-medium text-gray-500">Utilisés ce mois</div>
+                    <div class="text-2xl font-bold text-gray-900">{{ stats.used_this_month }}</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Filtres et recherche -->
-    <div class="bg-white p-4 rounded-lg shadow mb-6">
-        <form method="GET" class="flex flex-wrap gap-4">
-            <div class="flex-1 min-w-64">
-                <input type="text" name="search" value="{{ current_search }}" 
-                       placeholder="Rechercher par code ou nom..." 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-            </div>
-            
-            <div class="min-w-48">
-                <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500">
-                    <option value="">Tous les statuts</option>
-                    <option value="active" {{ current_status == 'active' ? 'selected' : '' }}>Actifs</option>
-                    <option value="inactive" {{ current_status == 'inactive' ? 'selected' : '' }}>Inactifs</option>
-                </select>
-            </div>
-
-            <div class="min-w-48">
-                <select name="type" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500">
-                    <option value="">Tous les types</option>
-                    <option value="percentage" {{ current_type == 'percentage' ? 'selected' : '' }}>Pourcentage</option>
-                    <option value="fixed_amount" {{ current_type == 'fixed_amount' ? 'selected' : '' }}>Montant fixe</option>
-                </select>
-            </div>
-            
-            <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">
-                <i class="fas fa-search mr-2"></i>Filtrer
-            </button>
-            
-            {% if current_search or current_status or current_type %}
-                <a href="{{ path('app_admin_discount_codes') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg">
-                    <i class="fas fa-times mr-2"></i>Réinitialiser
-                </a>
-            {% endif %}
-        </form>
+    <!-- Barre de recherche -->
+    <div class="bg-white rounded-lg shadow mb-6">
+        <div class="px-6 py-4">
+            <form method="GET" class="flex items-center space-x-4">
+                <div class="flex-1">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        <input type="text" 
+                               name="search" 
+                               value="{{ current_search }}"
+                               placeholder="Rechercher par code ou nom..." 
+                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                    </div>
+                </div>
+                <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">
+                    Rechercher
+                </button>
+                {% if current_search %}
+                    <a href="{{ path('app_admin_discount_codes') }}" class="text-gray-600 hover:text-gray-900">
+                        <i class="fas fa-times"></i> Effacer
+                    </a>
+                {% endif %}
+            </form>
+        </div>
     </div>
 
-    <!-- Liste des codes de réduction -->
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Code
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Réduction
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Validité
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Utilisation
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Statut
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    {% for code in discount_codes %}
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div>
-                                    <div class="text-sm font-bold text-gray-900 font-mono bg-gray-100 px-2 py-1 rounded inline-block">
-                                        {{ code.code }}
+    <!-- Liste des codes -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    Liste des codes de réduction
+                    {% if current_status %}
+                        ({{ current_status == 'active' ? 'Actifs' : 'Inactifs' }})
+                    {% endif %}
+                    {% if current_type %}
+                        ({{ current_type == 'percentage' ? 'Pourcentage' : 'Montant fixe' }})
+                    {% endif %}
+                </h3>
+                <span class="text-sm text-gray-500">{{ discount_codes.getTotalItemCount }} résultat(s)</span>
+            </div>
+        </div>
+
+        {% if discount_codes|length > 0 %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Code
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Nom
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Type
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Valeur
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Utilisation
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Statut
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for discountCode in discount_codes %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="font-mono text-sm font-medium text-gray-900 bg-gray-100 px-2 py-1 rounded">
+                                            {{ discountCode.code }}
+                                        </div>
+                                        <button onclick="copyToClipboard('{{ discountCode.code }}')" 
+                                                class="ml-2 text-gray-400 hover:text-gray-600" 
+                                                title="Copier le code">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
                                     </div>
-                                    <div class="text-sm text-gray-500 mt-1">{{ code.name }}</div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">
-                                    {{ code.formattedValue }}
-                                </div>
-                                <div class="text-sm text-gray-500">
-                                    {{ code.typeLabel }}
-                                    {% if code.minimumAmount %}
-                                        • Min: {{ code.minimumAmount|number_format(2, ',', ' ') }} €
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">{{ discountCode.name }}</div>
+                                    {% if discountCode.description %}
+                                        <div class="text-sm text-gray-500">
+                                            {{ discountCode.description|length > 50 ? discountCode.description|slice(0, 50) ~ '...' : discountCode.description }}
+                                        </div>
                                     {% endif %}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {% if code.validFrom or code.validUntil %}
-                                    {% if code.validFrom %}
-                                        Du {{ code.validFrom|date('d/m/Y') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                        {% if discountCode.type == 'percentage' %}
+                                            bg-blue-100 text-blue-800
+                                        {% else %}
+                                            bg-green-100 text-green-800
+                                        {% endif %}">
+                                        {% if discountCode.type == 'percentage' %}
+                                            <i class="fas fa-percentage mr-1"></i>
+                                            {{ discountCode.typeLabel }}
+                                        {% else %}
+                                            <i class="fas fa-euro-sign mr-1"></i>
+                                            {{ discountCode.typeLabel }}
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <div class="font-semibold">{{ discountCode.formattedValue }}</div>
+                                    {% if discountCode.minimumAmount %}
+                                        <div class="text-xs text-gray-500">
+                                            Min: {{ discountCode.minimumAmount|number_format(2, ',', ' ') }} €
+                                        </div>
                                     {% endif %}
-                                    {% if code.validUntil %}
-                                        {% if code.validFrom %}au{% else %}Jusqu'au{% endif %} {{ code.validUntil|date('d/m/Y') }}
-                                        {% if code.isExpiringSoon %}
-                                            <div class="text-orange-600 text-xs font-medium">
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <div class="flex items-center">
+                                        <span class="font-medium">{{ discountCode.usageCount }}</span>
+                                        {% if discountCode.usageLimit %}
+                                            <span class="text-gray-500">/ {{ discountCode.usageLimit }}</span>
+                                        {% else %}
+                                            <span class="text-gray-500">/ ∞</span>
+                                        {% endif %}
+                                    </div>
+                                    {% if discountCode.usageLimit %}
+                                        <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                                            <div class="bg-blue-600 h-1.5 rounded-full" 
+                                                 style="width: {{ (discountCode.usageCount / discountCode.usageLimit * 100)|round }}%"></div>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {% if discountCode.isActive %}
+                                        {% if discountCode.canBeUsed %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                <i class="fas fa-check-circle mr-1"></i>
+                                                Actif
+                                            </span>
+                                        {% else %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                                 <i class="fas fa-exclamation-triangle mr-1"></i>
-                                                Expire bientôt
+                                                Limité
+                                            </span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                            <i class="fas fa-pause-circle mr-1"></i>
+                                            Inactif
+                                        </span>
+                                    {% endif %}
+                                    
+                                    {% if discountCode.validUntil %}
+                                        {% set days_until_expiration = discountCode.daysUntilExpiration %}
+                                        {% if days_until_expiration is not null %}
+                                            <div class="text-xs mt-1 {{ days_until_expiration < 0 ? 'text-red-600' : (days_until_expiration <= 7 ? 'text-yellow-600' : 'text-gray-500') }}">
+                                                {% if days_until_expiration > 0 %}
+                                                    Expire dans {{ days_until_expiration }} j
+                                                {% elseif days_until_expiration == 0 %}
+                                                    Expire aujourd'hui
+                                                {% else %}
+                                                    Expiré
+                                                {% endif %}
                                             </div>
                                         {% endif %}
                                     {% endif %}
-                                {% else %}
-                                    <span class="text-gray-400">Illimitée</span>
-                                {% endif %}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <div class="flex items-center">
-                                    <span class="font-medium">{{ code.usageText }}</span>
-                                    {% if code.usageLimit %}
-                                        <div class="ml-2 bg-gray-200 rounded-full h-2 w-16">
-                                            <div class="bg-blue-600 h-2 rounded-full" style="width: {{ (code.usageCount / code.usageLimit * 100)|round }}%"></div>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                {% if code.canBeUsed %}
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                        <i class="fas fa-clock mr-1"></i>
-                                        Expiré
-                                    </span>
-                                {% endif %}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex space-x-2">
-                                    <a href="{{ path('app_admin_discount_codes_show', { 'id': code.id }) }}" 
-                                       class="text-primary-600 hover:text-primary-900" title="Voir">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{{ path('app_admin_discount_codes_edit', { 'id': code.id }) }}" 
-                                       class="text-blue-600 hover:text-blue-900" title="Modifier">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button onclick="copyToClipboard('{{ code.code }}')" 
-                                            class="text-gray-600 hover:text-gray-900" title="Copier le code">
-                                        <i class="fas fa-copy"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                                Aucun code de réduction trouvé.
-                                <a href="{{ path('app_admin_discount_codes_new') }}" class="text-primary-600 hover:text-primary-900 ml-1">
-                                    Créer le premier code
-                                </a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <div class="flex items-center space-x-2">
+                                        <a href="{{ path('app_admin_discount_codes_show', {id: discountCode.id}) }}" 
+                                           class="text-blue-600 hover:text-blue-900" title="Voir">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ path('app_admin_discount_codes_edit', {id: discountCode.id}) }}" 
+                                           class="text-green-600 hover:text-green-900" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="post" 
+                                              action="{{ path('app_admin_discount_codes_toggle_status', {id: discountCode.id}) }}" 
+                                              class="inline">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle_status' ~ discountCode.id) }}">
+                                            <button type="submit" 
+                                                    class="{% if discountCode.isActive %}text-red-600 hover:text-red-900{% else %}text-green-600 hover:text-green-900{% endif %}"
+                                                    title="{{ discountCode.isActive ? 'Désactiver' : 'Activer' }}"
+                                                    onclick="return confirm('Êtes-vous sûr ?')">
+                                                {% if discountCode.isActive %}
+                                                    <i class="fas fa-pause"></i>
+                                                {% else %}
+                                                    <i class="fas fa-play"></i>
+                                                {% endif %}
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
-        <!-- Pagination -->
-        {% if discount_codes.pageCount > 1 %}
-            <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+            <!-- Pagination -->
+            <div class="px-6 py-4 border-t border-gray-200">
                 {{ knp_pagination_render(discount_codes) }}
+            </div>
+        {% else %}
+            <div class="px-6 py-12 text-center">
+                <div class="mx-auto h-12 w-12 text-gray-400">
+                    <i class="fas fa-ticket-alt text-4xl"></i>
+                </div>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun code de réduction</h3>
+                <p class="mt-1 text-sm text-gray-500">
+                    {% if current_search %}
+                        Aucun code ne correspond à votre recherche.
+                    {% else %}
+                        Commencez par créer votre premier code de réduction.
+                    {% endif %}
+                </p>
+                {% if not current_search %}
+                    <div class="mt-6">
+                        <a href="{{ path('app_admin_discount_codes_new') }}" 
+                           class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700">
+                            <i class="fas fa-plus mr-2"></i>
+                            Nouveau code
+                        </a>
+                    </div>
+                {% endif %}
             </div>
         {% endif %}
     </div>
@@ -226,9 +339,14 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
+        function toggleFilterMenu() {
+            const menu = document.getElementById('filter-menu');
+            menu.classList.toggle('hidden');
+        }
+
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(function() {
-                // Afficher une notification temporaire
+                // Créer une notification temporaire
                 const notification = document.createElement('div');
                 notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
                 notification.textContent = `Code "${text}" copié !`;
@@ -239,5 +357,15 @@
                 }, 2000);
             });
         }
+
+        // Fermer le menu des filtres si on clique ailleurs
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('filter-menu');
+            const button = event.target.closest('button');
+            
+            if (!button || !button.onclick) {
+                menu.classList.add('hidden');
+            }
+        });
     </script>
 {% endblock %}
