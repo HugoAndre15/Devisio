@@ -92,14 +92,8 @@ rollback_migration() {
 # Créer une nouvelle migration
 create_migration() {
     echo_info "Création d'une nouvelle migration..."
-    echo "Entrez un nom pour la migration (optionnel) :"
-    read -r migration_name
-    if [ -n "$migration_name" ]; then
-        run_in_container php bin/console doctrine:migrations:generate --name="$migration_name"
-    else
-        run_in_container php bin/console doctrine:migrations:generate
-    fi
-    echo_success "Migration créée avec succès !"
+    run_in_container php bin/console doctrine:migrations:generate
+    echo_success "Migration créée avec succès ! Pensez à la renommer si nécessaire."
 }
 
 # Créer la base de données
