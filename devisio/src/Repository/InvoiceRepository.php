@@ -98,7 +98,7 @@ class InvoiceRepository extends ServiceEntityRepository
         // Utilisation de SQL natif pour DATE_FORMAT
         $sql = "
             SELECT 
-                DATE_FORMAT(i.paid_at, '%Y-%m') as month, 
+                TO_CHAR(i.paid_at, 'YYYY-MM') as month, 
                 SUM(i.total) as amount
             FROM invoice i 
             WHERE i.company_id = :companyId 

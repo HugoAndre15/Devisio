@@ -1,0 +1,49 @@
+
+services:
+  # Application Symfony
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    container_name: devisio_app
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+      - vendor:/var/www/html/vendor
+    environment:
+      - APP_ENV=${APP_ENV}
+      - APP_DEBUG=${APP_DEBUG}
+      - DATABASE_URL=${DATABASE_URL}
+      - MAILER_DSN=${MAILER_DSN}
+    depends_on:
+      - database
+      - mailer
+
+  # Base de données PostgreSQL
+  database:
+    image: postgres:${POSTGRES_VERSION}-alpine
+    container_name: devisio_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - database_data:/var/lib/postgresql/data
+
+  # Serveur de mail pour le développement
+  mailer:
+    image: axllent/mailpit
+    container_name: devisio_mailer
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+volumes:
+  database_data:
+  vendor:

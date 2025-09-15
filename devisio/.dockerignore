@@ -1,0 +1,29 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+docker-compose.override.yml
+.dockerignore
+
+# IDE
+.vscode
+.idea
+
+# Logs
+var/log/*
+var/cache/*
+
+# Dependencies
+node_modules
+vendor
+
+# Environment
+.env.local
+.env.local.php
+.env.*.local
+
+# Build files
+public/build
