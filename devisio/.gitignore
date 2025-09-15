@@ -27,7 +27,6 @@ yarn-error.log
 ###> symfony/dotenv ###
 .env.local
 /.env.local.php
-.env
 .env.dev
 /.env.*.local
 /config/secrets/prod/prod.decrypt.private.php
@@ -36,3 +35,5 @@ yarn-error.log
 /vendor/
 ###< symfony/twig-bundle ###
 
+composer.lock
+symfony.lock
