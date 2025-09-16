@@ -35,6 +35,11 @@ class PdfGeneratorService
         return $this->generatePdf($html);
     }
 
+    public function generateComptaPdf(string $html): string
+    {
+        return $this->generatePdf($html);
+    }
+
     private function generatePdf(string $html): string
     {
         $options = new Options();
