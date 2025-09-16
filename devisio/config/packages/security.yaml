@@ -36,6 +36,7 @@ security:
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/dashboard, roles: ROLE_USER }
+        - { path: ^/comptabilite, roles: ROLE_COMPTABLE }
         - { path: ^/, roles: ROLE_USER }
 
     role_hierarchy:

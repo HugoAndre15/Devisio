@@ -1,0 +1,127 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Comptabilité - Devisio{% endblock %}
+{% block page_title %}Comptabilité{% endblock %}
+
+{% block body %}
+    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_COMPTABLE') %}
+        <div class="flex justify-end mb-6">
+            <a href="{{ path('app_comptabilite_pdf') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200">
+                <i class="fas fa-file-pdf mr-2"></i>
+                Rapport PDF
+            </a>
+        </div>
+        <div class="mb-8">
+            <h2 class="text-xl font-bold mb-4">Métriques financières</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">CA encaissé</p>
+                            <p class="text-2xl font-bold text-green-600">
+                                {% set total_revenue = 0 %}
+                                {% for month in monthly_revenue %}
+                                    {% set total_revenue = total_revenue + month.amount %}
+                                {% endfor %}
+                                {{ total_revenue|number_format(0, ',', ' ') }} €
+                            </p>
+                            <p class="text-xs text-gray-500 mt-1">12 derniers mois</p>
+                        </div>
+                        <div class="p-3 rounded-full bg-green-100 text-green-600">
+                            <i class="fas fa-euro-sign text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">En attente</p>
+                            <p class="text-2xl font-bold text-orange-600">
+                                {% set outstanding = 0 %}
+                                {% for invoice in recent_invoices %}
+                                    {% if invoice.status in ['sent', 'overdue'] %}
+                                        {% set outstanding = outstanding + invoice.total %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ outstanding|number_format(0, ',', ' ') }} €
+                            </p>
+                            <p class="text-xs text-gray-500 mt-1">Factures impayées</p>
+                        </div>
+                        <div class="p-3 rounded-full bg-orange-100 text-orange-600">
+                            <i class="fas fa-hourglass-half text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Taux conversion</p>
+                            <p class="text-2xl font-bold text-blue-600">
+                                {% if (stats.quotes.total ?? 0) > 0 %}
+                                    {{ (((stats.invoices.total ?? 0) / (stats.quotes.total ?? 1)) * 100)|number_format(0) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </p>
+                            <p class="text-xs text-gray-500 mt-1">Devis → Factures</p>
+                        </div>
+                        <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                            <i class="fas fa-chart-line text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-8 bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Revenus mensuels (12 derniers mois)</h3>
+            </div>
+            <div class="p-6">
+                {% if monthly_revenue|length > 0 %}
+                    <div class="h-64 flex items-end space-x-2">
+                        {% set max_amount = 0 %}
+                        {% for month in monthly_revenue %}
+                            {% if month.amount > max_amount %}
+                                {% set max_amount = month.amount %}
+                            {% endif %}
+                        {% endfor %}
+                        {% for month in monthly_revenue %}
+                            {% set height = max_amount > 0 ? (month.amount / max_amount * 100) : 0 %}
+                            <div class="flex-1 bg-blue-400 hover:bg-blue-500 rounded-t-lg relative transition-colors duration-200" style="height: {{ height }}%">
+                                <div class="absolute -top-8 left-0 right-0 text-center text-xs text-gray-600">
+                                    {% if month.amount > 0 %}
+                                        {{ (month.amount / 1000)|round(1) }}k€
+                                    {% endif %}
+                                </div>
+                                <div class="absolute -bottom-8 left-0 right-0 text-center text-xs text-gray-500">
+                                    {{ month.month|date('M Y') }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-12 text-center text-sm text-gray-500">
+                        <p>
+                            Total sur 12 mois : 
+                            {% set total_revenue = 0 %}
+                            {% for month in monthly_revenue %}
+                                {% set total_revenue = total_revenue + month.amount %}
+                            {% endfor %}
+                            <span class="font-semibold text-primary-600">{{ total_revenue|number_format(0, ',', ' ') }} €</span>
+                        </p>
+                    </div>
+                {% else %}
+                    <div class="text-center py-12 text-gray-500">
+                        <i class="fas fa-chart-line text-4xl mb-4"></i>
+                        <p>Aucune donnée de revenus disponible</p>
+                        <p class="text-sm">Les revenus apparaîtront une fois que vous aurez des factures payées</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-12 text-gray-500">
+            <i class="fas fa-lock text-4xl mb-4"></i>
+            <p>Accès réservé à la comptabilité</p>
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport Comptabilité PDF</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #333;
+            margin: 0;
+            padding: 32px;
+            background: #f3f4f6;
+        }
+        .banner {
+            background: #2563eb;
+            color: #fff;
+            padding: 32px 0;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 32px;
+        }
+        .metrics {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        .metric {
+            flex: 1;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+        .metric-ca { background: #e6f4ea; }
+        .metric-wait { background: #fff7ed; }
+        .metric-conv { background: #eff6ff; }
+        .metric-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        .metric-ca .metric-icon { color: #16a34a; }
+        .metric-wait .metric-icon { color: #ea580c; }
+        .metric-conv .metric-icon { color: #2563eb; }
+        .metric-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .metric-ca .metric-title { color: #166534; }
+        .metric-wait .metric-title { color: #b45309; }
+        .metric-conv .metric-title { color: #1e40af; }
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+        .metric-ca .metric-value { color: #16a34a; }
+        .metric-wait .metric-value { color: #ea580c; }
+        .metric-conv .metric-value { color: #2563eb; }
+        .metric-desc {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px #e5e7eb;
+            padding: 32px;
+        }
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 24px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+        th, td {
+            padding: 8px;
+        }
+        th {
+            background: #f1f5f9;
+            color: #2563eb;
+            font-size: 0.95rem;
+            text-align: left;
+        }
+        td {
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .total-row {
+            text-align: right;
+            font-size: 1.1rem;
+            color: #2563eb;
+            font-weight: bold;
+        }
+        .no-data {
+            text-align: center;
+            color: #888;
+            padding: 48px 0;
+        }
+        .no-data i {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="banner">
+        <h1 style="font-size: 2.5rem; font-weight: bold; margin-bottom: 0;">Rapport financier</h1>
+        <p style="font-size: 1.2rem; margin-top: 8px;">Synthèse de la comptabilité sur 12 mois</p>
+    </div>
+    <div class="metrics">
+        <div class="metric metric-ca">
+            <div class="metric-icon"><i class="fas fa-euro-sign"></i></div>
+            <div class="metric-title">CA encaissé</div>
+            <div class="metric-value">
+                {% set total_revenue = 0 %}
+                {% for month in monthly_revenue %}
+                    {% set total_revenue = total_revenue + month.amount %}
+                {% endfor %}
+                {{ total_revenue|number_format(0, ',', ' ') }} €
+            </div>
+            <div class="metric-desc">12 derniers mois</div>
+        </div>
+        <div class="metric metric-wait">
+            <div class="metric-icon"><i class="fas fa-hourglass-half"></i></div>
+            <div class="metric-title">En attente</div>
+            <div class="metric-value">
+                {% set outstanding = 0 %}
+                {% for invoice in recent_invoices %}
+                    {% if invoice.status in ['sent', 'overdue'] %}
+                        {% set outstanding = outstanding + invoice.total %}
+                    {% endif %}
+                {% endfor %}
+                {{ outstanding|number_format(0, ',', ' ') }} €
+            </div>
+            <div class="metric-desc">Factures impayées</div>
+        </div>
+        <div class="metric metric-conv">
+            <div class="metric-icon"><i class="fas fa-chart-line"></i></div>
+            <div class="metric-title">Taux conversion</div>
+            <div class="metric-value">
+                {% if (stats.quotes.total ?? 0) > 0 %}
+                    {{ (((stats.invoices.total ?? 0) / (stats.quotes.total ?? 1)) * 100)|number_format(0) }}%
+                {% else %}
+                    0%
+                {% endif %}
+            </div>
+            <div class="metric-desc">Devis → Factures</div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title"><i class="fas fa-calendar-alt"></i> Revenus mensuels (12 derniers mois)</div>
+        {% if monthly_revenue|length > 0 %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mois</th>
+                        <th style="text-align:right;">Montant (€)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for month in monthly_revenue %}
+                        <tr>
+                            <td>{{ month.month|date('M Y') }}</td>
+                            <td style="text-align:right; font-weight:bold;">{{ month.amount|number_format(0, ',', ' ') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="total-row">
+                Total sur 12 mois :
+                {% set total_revenue = 0 %}
+                {% for month in monthly_revenue %}
+                    {% set total_revenue = total_revenue + month.amount %}
+                {% endfor %}
+                <span>{{ total_revenue|number_format(0, ',', ' ') }} €</span>
+            </div>
+        {% else %}
+            <div class="no-data">
+                <i class="fas fa-chart-line"></i>
+                <p>Aucune donnée de revenus disponible</p>
+                <p style="font-size:0.95rem;">Les revenus apparaîtront une fois que vous aurez des factures payées</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
