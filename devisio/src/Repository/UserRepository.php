@@ -55,14 +55,18 @@ class UserRepository extends ServiceEntityRepository
 
     public function countByCompanyAndRole(Company $company, string $role): int
     {
-        return $this->createQueryBuilder('u')
-            ->select('COUNT(u.id)')
-            ->andWhere('u.company = :company')
-            ->andWhere('u.roles LIKE :role')
-            ->setParameter('company', $company)
-            ->setParameter('role', '%' . $role . '%')
-            ->getQuery()
-            ->getSingleScalarResult();
+        $sql = "SELECT COUNT(u.id) 
+                FROM users u 
+                WHERE u.company_id = :company_id 
+                AND u.roles::text LIKE :role";
+        
+        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+        $result = $stmt->executeQuery([
+            'company_id' => $company->getId(),
+            'role' => '%"' . $role . '"%'
+        ]);
+        
+        return (int) $result->fetchOne();
     }
 
     public function countActiveAdminsByCompany(Company $company): int
